@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import Client, SearchFilter, FollowUp, Feedback
 from .serializers import ClientSerializer, SearchFilterSerializer, FollowUpSerializer, FeedbackSerializer
 from django.shortcuts import get_object_or_404
+from datetime import datetime
 
 
 # View for Client model
@@ -78,3 +79,29 @@ class FeedbackAPIView(APIView):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowUpDate(APIView):
+    def get(self, request):
+        date_param = request.GET.get('date', None)
+        if date_param:
+            try:
+                # Parse the datetime string to a Python datetime object
+                date_param = datetime.strptime(date_param, '%Y-%m-%dT%H:%M:%S.%f')
+                # Filter FollowUps based on the provided date
+                followups = FollowUp.objects.filter(date_sent__date=date_param.date())
+            except ValueError:
+                return Response({'error': 'Invalid date format. Use "YYYY-MM-DDTHH:MM:SS.000".'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            followups = FollowUp.objects.all()
+
+        serializer = FollowUpSerializer(followups, many=True)
+        return Response(serializer.data)
+
+    # def post(self, request):
+    #     serializer = FollowUpSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
