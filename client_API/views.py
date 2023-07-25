@@ -105,3 +105,38 @@ class FollowUpDate(APIView):
     #         serializer.save()
     #         return Response(serializer.data, status=status.HTTP_201_CREATED)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ClientDetailsAPIView(APIView):
+    def get(self, request, client_id):
+        try:
+            # Get the client instance based on the provided client_id
+            client = Client.objects.get(id=client_id)
+
+            # Serialize the client data
+            client_serializer = ClientSerializer(client)
+
+            # Filter followups based on done parameter (optional query parameter)
+            done_param = request.GET.get('done', None)
+            followups = FollowUp.objects.filter(client=client)
+            if done_param:
+                followups = followups.filter(done=done_param.lower() == 'true')
+
+            # Filter feedbacks based on response parameter (optional query parameter)
+            response_param = request.GET.get('response', None)
+            feedbacks = Feedback.objects.filter(follow_up__client=client)
+            if response_param:
+                feedbacks = feedbacks.filter(response=response_param)
+
+            # Serialize filtered followups and feedbacks
+            followup_serializer = FollowUpSerializer(followups, many=True)
+            feedback_serializer = FeedbackSerializer(feedbacks, many=True)
+
+            # Combine the serialized data into a single response
+            response_data = client_serializer.data
+            response_data['followups'] = followup_serializer.data
+            response_data['feedback'] = feedback_serializer.data
+
+            return Response(response_data)
+        except Client.DoesNotExist:
+            return Response({'error': 'Client not found.'}, status=status.HTTP_404_NOT_FOUND)
