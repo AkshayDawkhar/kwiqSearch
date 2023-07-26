@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 class Project(models.Model):
@@ -37,3 +38,15 @@ class Unit(models.Model):
     unit = models.FloatField()
     CarpetArea = models.IntegerField()
     price = models.IntegerField()
+
+class Area(models.Model):
+    name = models.CharField(max_length=100)
+    formatted_version = models.CharField(max_length=100, unique=True)
+
+    def save(self, *args, **kwargs):
+        # Generate formatted version of the name before saving
+        self.formatted_version = slugify(self.name.replace(" ", ""))
+        super(Area, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

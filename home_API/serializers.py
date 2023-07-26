@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Unit
+from .models import Project, Unit, Area
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -29,10 +29,13 @@ class UnitSerializer1(serializers.ModelSerializer):
     project_name = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
     rera = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+    latitude = serializers.SerializerMethodField()
+    latitude = serializers.SerializerMethodField()
 
     class Meta:
         model = Unit
-        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price']
+        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude']
 
     def get_project_name(self, obj):
         return obj.project_id.projectName
@@ -42,3 +45,15 @@ class UnitSerializer1(serializers.ModelSerializer):
 
     def get_rera(self, obj):
         return obj.project_id.rera
+
+    def get_longitude(self, obj):
+        return obj.project_id.longitude
+
+    def get_latitude(self, obj):
+        return obj.project_id.latitude
+
+
+class AreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area
+        fields = '__all__'
