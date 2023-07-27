@@ -32,10 +32,12 @@ class UnitSerializer1(serializers.ModelSerializer):
     longitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
 
     class Meta:
         model = Unit
-        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude']
+        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude',
+                  'amenities']
 
     def get_project_name(self, obj):
         return obj.project_id.projectName
@@ -51,6 +53,9 @@ class UnitSerializer1(serializers.ModelSerializer):
 
     def get_latitude(self, obj):
         return obj.project_id.latitude
+
+    def get_amenities(self, obj):
+        return obj.project_id.amenities
 
 
 class AreaSerializer(serializers.ModelSerializer):

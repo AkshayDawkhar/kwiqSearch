@@ -49,7 +49,7 @@ class ProjectList(APIView):
                     return Response(data=unitSerializer.errors, status=400)
                     # print(unitSerializer.errors)
             # projectSerializer.
-            return Response(data={})
+            return Response(data={},status=status.HTTP_201_CREATED)
 
         return Response(data=projectSerializer.errors, status=400)
 
