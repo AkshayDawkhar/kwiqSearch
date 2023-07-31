@@ -1,27 +1,28 @@
 from django.db import models
+from home_API.models import Area, Units
 
 
 class Client(models.Model):
     fname = models.CharField(max_length=100)
     lname = models.CharField(max_length=100)
-    phoneNO = models.IntegerField()
-    massageNO = models.IntegerField()
+    phoneNO = models.PositiveBigIntegerField()
+    massageNO = models.PositiveBigIntegerField()
     email = models.EmailField(unique=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.fname} {self.lname}"
 
 
 class SearchFilter(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    Area = models.JSONField()
+    Area = models.ManyToManyField(Area)
     startBudget = models.IntegerField()
     stopBudget = models.IntegerField()
     startCarpetArea = models.IntegerField()
     stopCarpetArea = models.IntegerField()
     possession = models.DateTimeField()
     requirements = models.CharField(max_length=200)
-    units = models.JSONField()
+    units = models.ManyToManyField(Units)
 
     # Add fields for specific search criteria (e.g., location, price range, category, etc.)
 
@@ -37,7 +38,7 @@ class FollowUp(models.Model):
     done = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.client.name} - {self.date_sent}"
+        return f"{self.client.fname} {self.client.lname} - {self.date_sent}"
 
 
 class Feedback(models.Model):
