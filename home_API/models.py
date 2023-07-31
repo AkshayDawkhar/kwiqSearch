@@ -26,18 +26,33 @@ class Project(models.Model):
     rera = models.DateTimeField()
     possession = models.DateTimeField()
     contactPerson = models.CharField(max_length=100)
-    contactNumber = models.IntegerField()
+    contactNumber = models.PositiveBigIntegerField()
     marketValue = models.IntegerField()
     lifts = models.IntegerField()
     brokerage = models.FloatField()
     incentive = models.IntegerField()
 
+    def __str__(self):
+        return f'{self.projectName} {self.area}'
+
+
+class Units(models.Model):
+    value = models.FloatField(primary_key=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 
 class Unit(models.Model):
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='units')
-    unit = models.FloatField()
+    unit = models.OneToOneField(Units, on_delete=models.DO_NOTHING)
     CarpetArea = models.IntegerField()
     price = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.unit.name} {self.project_id.projectName}"
+
 
 class Area(models.Model):
     name = models.CharField(max_length=100)
