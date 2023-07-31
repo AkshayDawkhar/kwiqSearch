@@ -2,14 +2,40 @@ from django.db import models
 from django.utils.text import slugify
 
 
+class Area(models.Model):
+    name = models.CharField(max_length=100)
+    formatted_version = models.CharField(max_length=100, unique=True)
+
+    def save(self, *args, **kwargs):
+        # Generate formatted version of the name before saving
+        self.formatted_version = slugify(self.name.replace(" ", ""))
+        super(Area, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class GovernmentalArea(models.Model):
+    name = models.CharField(max_length=100)
+    formatted_version = models.CharField(max_length=100, unique=True)
+
+    def save(self, *args, **kwargs):
+        # Generate formatted version of the name before saving
+        self.formatted_version = slugify(self.name.replace(" ", ""))
+        super(GovernmentalArea, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
-    area = models.CharField(max_length=100)
+    area = models.OneToOneField(Area, on_delete=models.DO_NOTHING)
     projectName = models.CharField(max_length=100)
     projectType = models.CharField(max_length=100)
     developerName = models.CharField(max_length=100)
     landParcel = models.FloatField()
     landmark = models.CharField(max_length=100)
-    areaIn = models.CharField(max_length=100)
+    areaIn = models.OneToOneField(GovernmentalArea, on_delete=models.DO_NOTHING)
     waterSupply = models.CharField(max_length=100)
     floors = models.IntegerField()
     flatsPerFloors = models.IntegerField()
@@ -52,16 +78,3 @@ class Unit(models.Model):
 
     def __str__(self):
         return f"{self.unit.name} {self.project_id.projectName}"
-
-
-class Area(models.Model):
-    name = models.CharField(max_length=100)
-    formatted_version = models.CharField(max_length=100, unique=True)
-
-    def save(self, *args, **kwargs):
-        # Generate formatted version of the name before saving
-        self.formatted_version = slugify(self.name.replace(" ", ""))
-        super(Area, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Unit, Area
+from .models import Project, Unit, Area, Units, GovernmentalArea
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -61,4 +61,16 @@ class UnitSerializer1(serializers.ModelSerializer):
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
+        fields = '__all__'
+
+
+class UnitsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Units
+        fields = '__all__'
+
+
+class GovernmentalAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GovernmentalArea
         fields = '__all__'

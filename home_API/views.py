@@ -3,8 +3,9 @@ from django.db.utils import IntegrityError
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer
-from .models import Project, Unit, Area
+from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
+    UnitsSerializer, GovernmentalAreaSerializer
+from .models import Project, Unit, Area, Units, GovernmentalArea
 
 
 class ProjectList(APIView):
@@ -97,3 +98,16 @@ class AreaAPIView(APIView):
             return Area.objects.get(pk=pk)
         except Area.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class OptionsView(APIView):
+    def get(self, request):
+        units = Units.objects.all()
+        governmentalArea = GovernmentalArea.objects.all()
+        unitsSerializer = UnitsSerializer(units, many=True)
+        governmentalAreaSerializer = GovernmentalAreaSerializer(governmentalArea, many=True)
+        responses = {
+            "units": unitsSerializer.data,
+            "governmentalArea": governmentalAreaSerializer.data,
+        }
+        return Response(data=responses, status=status.HTTP_200_OK)

@@ -76,9 +76,9 @@ WSGI_APPLICATION = 'kwiqSearch.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ilxiiatw',
-        'USER': 'ilxiiatw',
-        'PASSWORD': 'ARK0bsSo_CU-ao5QbzjhJVU54X7gdIht',  # Replace with the actual password for myuser
+        'NAME': 'mfikdrja',
+        'USER': 'mfikdrja',
+        'PASSWORD': 'dYPSKdIoc8iSTqzCyd5YP8BWP_xtGUIP',  # Replace with the actual password for myuser
         'HOST': 'mahmud.db.elephantsql.com',  # Replace with the database host if needed
         'PORT': '5432',  # Replace with the database port if needed
     }
