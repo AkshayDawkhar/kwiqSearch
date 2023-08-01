@@ -2,40 +2,14 @@ from django.db import models
 from django.utils.text import slugify
 
 
-class Area(models.Model):
-    name = models.CharField(max_length=100)
-    formatted_version = models.CharField(max_length=100, unique=True)
-
-    def save(self, *args, **kwargs):
-        # Generate formatted version of the name before saving
-        self.formatted_version = slugify(self.name.replace(" ", ""))
-        super(Area, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-
-class GovernmentalArea(models.Model):
-    name = models.CharField(max_length=100)
-    formatted_version = models.CharField(max_length=100, unique=True)
-
-    def save(self, *args, **kwargs):
-        # Generate formatted version of the name before saving
-        self.formatted_version = slugify(self.name.replace(" ", ""))
-        super(GovernmentalArea, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-
 class Project(models.Model):
-    area = models.OneToOneField(Area, on_delete=models.DO_NOTHING)
+    area = models.CharField(max_length=100)
     projectName = models.CharField(max_length=100)
     projectType = models.CharField(max_length=100)
     developerName = models.CharField(max_length=100)
     landParcel = models.FloatField()
     landmark = models.CharField(max_length=100)
-    areaIn = models.OneToOneField(GovernmentalArea, on_delete=models.DO_NOTHING)
+    areaIn = models.CharField(max_length=100)
     waterSupply = models.CharField(max_length=100)
     floors = models.IntegerField()
     flatsPerFloors = models.IntegerField()
@@ -72,9 +46,35 @@ class Units(models.Model):
 
 class Unit(models.Model):
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='units')
-    unit = models.OneToOneField(Units, on_delete=models.DO_NOTHING)
+    unit = models.FloatField()
     CarpetArea = models.IntegerField()
     price = models.IntegerField()
 
     def __str__(self):
-        return f"{self.unit.name} {self.project_id.projectName}"
+        return f"{self.unit} {self.project_id.projectName}"
+
+
+class GovernmentalArea(models.Model):
+    name = models.CharField(max_length=100)
+    formatted_version = models.CharField(max_length=100, unique=True, primary_key=True)
+
+    def save(self, *args, **kwargs):
+        # Generate formatted version of the name before saving
+        self.formatted_version = slugify(self.name.replace(" ", ""))
+        super(GovernmentalArea, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class Area(models.Model):
+    name = models.CharField(max_length=100)
+    formatted_version = models.CharField(max_length=100, unique=True, primary_key=True)
+
+    def save(self, *args, **kwargs):
+        # Generate formatted version of the name before saving
+        self.formatted_version = slugify(self.name.replace(" ", ""))
+        super(Area, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

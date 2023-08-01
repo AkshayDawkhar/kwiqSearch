@@ -74,3 +74,9 @@ class GovernmentalAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = GovernmentalArea
         fields = '__all__'
+
+
+class ProjectsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id','area','projectName','developerName']

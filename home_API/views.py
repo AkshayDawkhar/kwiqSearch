@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
-    UnitsSerializer, GovernmentalAreaSerializer
+    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer
 from .models import Project, Unit, Area, Units, GovernmentalArea
 
 
@@ -62,7 +62,7 @@ class AreaAPIView(APIView):
             serializer = AreaSerializer(area)
             return Response(serializer.data)
         else:
-            areas = Area.objects.all()
+            areas = Area.objects.all().order_by('formatted_version')
             serializer = AreaSerializer(areas, many=True)
             return Response(serializer.data)
 
@@ -111,3 +111,22 @@ class OptionsView(APIView):
             "governmentalArea": governmentalAreaSerializer.data,
         }
         return Response(data=responses, status=status.HTTP_200_OK)
+
+
+class ProjectsView(APIView):
+    def get(self, request):
+        project = Project.objects.all()
+        projectsSerializer = ProjectsSerializer(project, many=True)
+        return Response(projectsSerializer.data)
+
+
+class ProjectView(APIView):
+    def get(self, request, pk):
+        project = Project.objects.get(id=pk)
+        projectSerializer = ProjectSerializer(project)
+        data = projectSerializer.data
+        unit = Unit.objects.filter(project_id=pk)
+        unitSerializer = UnitSerializer(unit, many=True)
+        data.update({'units': unitSerializer.data})
+        return Response(data)
+        # return Response(projectSerializer.data.update({'nameme': 'akshay'}))
