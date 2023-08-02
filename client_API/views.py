@@ -14,12 +14,36 @@ class ClientAPIView(APIView):
         serializer = ClientSerializer(clients, many=True)
         return Response(serializer.data)
 
+    # def post(self, request):
+    #     serializer = ClientSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         client = serializer.save()
+    #         print(client.id)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def post(self, request):
-        serializer = ClientSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        client_serializer = ClientSerializer(data=request.data)
+        if client_serializer.is_valid():
+            client = client_serializer.save()
+
+            # Create SearchFilter instance associated with the newly created client
+            search_filter_data = request.data.get('search_filter', {})
+            search_filter_data['client'] = client.id
+            search_filter_serializer = SearchFilterSerializer(data=search_filter_data)
+
+            if search_filter_serializer.is_valid():
+                search_filter_serializer.save()
+                response_data = {
+                    'client': client_serializer.data,
+                    'search_filter': search_filter_serializer.data
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            else:
+                # Delete the newly created client if the SearchFilter creation fails
+                client.delete()
+                return Response(search_filter_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(client_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # View for SearchFilter model

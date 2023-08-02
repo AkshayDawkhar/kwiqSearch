@@ -27,7 +27,7 @@ class SearchFilter(models.Model):
     # Add fields for specific search criteria (e.g., location, price range, category, etc.)
 
     def __str__(self):
-        return f"{self.client.name}"
+        return f"{self.client.fname} {self.client.lname}"
 
 
 class FollowUp(models.Model):
