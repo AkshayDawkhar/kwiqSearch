@@ -65,6 +65,13 @@ class SearchFilterAPIView(APIView):
 class FollowUpAPIView(APIView):
     def get(self, request):
         client_id = request.query_params.get('client_id', None)
+        target_date = request.query_params.get('target_date', None)
+        if target_date:
+            followups = FollowUp.objects.filter(date_sent__date=target_date)
+            serializer = FollowUpSerializer(followups, many=True)
+            return Response(serializer.data)
+
+            pass
         if not client_id:
             return Response("client_id parameter is missing.", status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,6 +85,7 @@ class FollowUpAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
