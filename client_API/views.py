@@ -81,8 +81,9 @@ class FollowUpsAPIView(APIView):
     def get(self, request):
         client_id = request.query_params.get('client_id', None)
         target_date = request.query_params.get('target_date', None)
+        done_param = request.GET.get('done', False)
         if target_date:
-            followups = FollowUp.objects.filter(date_sent__date=target_date, done=False).order_by('date_sent')
+            followups = FollowUp.objects.filter(date_sent__date=target_date, done=done_param).order_by('date_sent')
             serializer = FollowUpDateSerializer(followups, many=True)
             return Response(serializer.data)
 
