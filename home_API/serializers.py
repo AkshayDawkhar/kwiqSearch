@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Unit, Area, Units, GovernmentalArea
+from .models import Project, Unit, Area, Units, GovernmentalArea, Image
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -79,4 +79,12 @@ class GovernmentalAreaSerializer(serializers.ModelSerializer):
 class ProjectsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id','area','projectName','developerName']
+        fields = ['id', 'area', 'projectName', 'developerName']
+
+
+class ImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True, default='Images/None/no0img.jpg')
+
+    class Meta:
+        model = Image
+        fields = '__all__'

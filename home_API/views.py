@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
-    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer
-from .models import Project, Unit, Area, Units, GovernmentalArea
+    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer
+from .models import Project, Unit, Area, Units, GovernmentalArea, Image
 
 
 class ProjectList(APIView):
@@ -131,3 +131,34 @@ class ProjectView(APIView):
         data.update({'units': unitSerializer.data})
         return Response(data)
         # return Response(projectSerializer.data.update({'nameme': 'akshay'}))
+
+
+class Images(APIView):
+    def get(self, request):
+        a = Image.objects.all()
+        b = ImageSerializer(a, many=True)
+        return Response(b.data)
+
+    def post(self, request):
+        a = ImageSerializer(data=request.data)
+        if a.is_valid():
+            a.save()
+            return Response(a.data, status=status.HTTP_200_OK)
+        else:
+            return Response(a.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ImageView(APIView):
+
+    def get(self, request, pk):
+        a = Image.objects.get(id=pk)
+        b = ImageSerializer(a)
+        return Response(b.data)
+
+    def delete(self, request, pk):
+        try:
+            image = Image.objects.get(id=pk)
+            image.delete()
+            return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Image.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)

@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 from django.utils.text import slugify
 
@@ -78,3 +80,15 @@ class Area(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Image(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='Images/', default='Images/None/no0img.jpg')
+
+    def delete(self, *args, **kwargs):
+        # Delete the image file from the file system before deleting the model instance
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)

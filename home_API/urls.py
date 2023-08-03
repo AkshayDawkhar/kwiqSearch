@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProjectList, AreaAPIView,OptionsView,ProjectsView,ProjectView
+from .views import ProjectList, AreaAPIView, OptionsView, ProjectsView, ProjectView, Images, ImageView
 
 urlpatterns = [
     path('projects/', ProjectList.as_view(), name='project-create'),
@@ -8,5 +8,7 @@ urlpatterns = [
     path('areas/', AreaAPIView.as_view(), name='area-list'),
     path('areas/<int:pk>/', AreaAPIView.as_view(), name='area-detail'),
     path('options/', OptionsView.as_view(), name='Option-detail'),
+    path('images/', Images.as_view()),
+    path('image/<int:pk>/', ImageView.as_view())
     # path('projects-filter/', ProjectSearchAPIView.as_view(), name='project-filter'),
 ]

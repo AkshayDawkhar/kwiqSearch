@@ -63,7 +63,7 @@ class SearchFilterAPIView(APIView):
 
 
 # View for FollowUp model
-class FollowUpAPIView(APIView):
+class FollowUpsAPIView(APIView):
     def get(self, request):
         client_id = request.query_params.get('client_id', None)
         target_date = request.query_params.get('target_date', None)
@@ -91,7 +91,7 @@ class FollowUpAPIView(APIView):
 
 
 # View for Feedback model
-class FeedbackAPIView(APIView):
+class FeedbacksAPIView(APIView):
     def get(self, request):
         feedbacks = Feedback.objects.all()
         serializer = FeedbackSerializer(feedbacks, many=True)
@@ -112,6 +112,13 @@ class FeedbackAPIView(APIView):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowUpAPIView(APIView):
+    def get(self, request, id):
+        followUp = FollowUp.objects.get(id=id)
+        serializer = FollowUpSerializer(followUp)
+        return Response(serializer.data)
 
 
 class FollowUpDate(APIView):
