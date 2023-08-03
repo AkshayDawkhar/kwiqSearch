@@ -20,6 +20,29 @@ class FollowUpSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FollowUpDateSerializer(serializers.ModelSerializer):
+    fname = serializers.SerializerMethodField()
+    lname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FollowUp
+        fields = [
+            'client',
+            'message',
+            'actions',
+            'date_sent',
+            'done',
+            'fname',
+            'lname'
+        ]
+
+    def get_fname(self, obj):
+        return obj.client.fname
+
+    def get_lname(self, obj):
+        return obj.client.lname
+
+
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback

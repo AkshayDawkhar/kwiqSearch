@@ -47,11 +47,12 @@ class ProjectList(APIView):
                     u = unitSerializer.save()
                     print(u)
                 else:
+                    print(unitSerializer.errors)
                     return Response(data=unitSerializer.errors, status=400)
                     # print(unitSerializer.errors)
             # projectSerializer.
             return Response(data={}, status=status.HTTP_201_CREATED)
-
+        print(projectSerializer.errors)
         return Response(data=projectSerializer.errors, status=400)
 
 

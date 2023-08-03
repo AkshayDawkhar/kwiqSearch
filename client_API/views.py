@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Client, SearchFilter, FollowUp, Feedback
-from .serializers import ClientSerializer, SearchFilterSerializer, FollowUpSerializer, FeedbackSerializer
+from .serializers import ClientSerializer, SearchFilterSerializer, FollowUpSerializer, FeedbackSerializer, \
+    FollowUpDateSerializer
 from django.shortcuts import get_object_or_404
 from datetime import datetime
 
@@ -67,8 +68,8 @@ class FollowUpAPIView(APIView):
         client_id = request.query_params.get('client_id', None)
         target_date = request.query_params.get('target_date', None)
         if target_date:
-            followups = FollowUp.objects.filter(date_sent__date=target_date)
-            serializer = FollowUpSerializer(followups, many=True)
+            followups = FollowUp.objects.filter(date_sent__date=target_date, done=False).order_by('date_sent')
+            serializer = FollowUpDateSerializer(followups, many=True)
             return Response(serializer.data)
 
             pass
@@ -76,7 +77,7 @@ class FollowUpAPIView(APIView):
             return Response("client_id parameter is missing.", status=status.HTTP_400_BAD_REQUEST)
 
         client = get_object_or_404(Client, id=client_id)
-        followups = FollowUp.objects.filter(client=client, done=False)
+        followups = FollowUp.objects.filter(client=client, done=False).order_by('date_sent')
         serializer = FollowUpSerializer(followups, many=True)
         return Response(serializer.data)
 
@@ -150,7 +151,7 @@ class ClientDetailsAPIView(APIView):
 
             # Filter followups based on done parameter (optional query parameter)
             done_param = request.GET.get('done', None)
-            followups = FollowUp.objects.filter(client=client)
+            followups = FollowUp.objects.filter(client=client).order_by('date_sent')
             if done_param:
                 followups = followups.filter(done=done_param.lower() == 'true')
 
