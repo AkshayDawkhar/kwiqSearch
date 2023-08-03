@@ -48,10 +48,24 @@ class ClientAPIView(APIView):
 
 
 # View for SearchFilter model
-class SearchFilterAPIView(APIView):
+class SearchFiltersAPIView(APIView):
     def get(self, request):
         filters = SearchFilter.objects.all()
         serializer = SearchFilterSerializer(filters, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = SearchFilterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SearchFilterAPIView(APIView):
+    def get(self, request, id):
+        filters = SearchFilter.objects.get(id=id)
+        serializer = SearchFilterSerializer(filters)
         return Response(serializer.data)
 
     def post(self, request):
@@ -158,7 +172,7 @@ class ClientDetailsAPIView(APIView):
 
             # Filter followups based on done parameter (optional query parameter)
             done_param = request.GET.get('done', None)
-            followups = FollowUp.objects.filter(client=client).order_by('date_sent')
+            followups = FollowUp.objects.filter(client=client, done=False).order_by('date_sent')
             if done_param:
                 followups = followups.filter(done=done_param.lower() == 'true')
 
@@ -172,11 +186,23 @@ class ClientDetailsAPIView(APIView):
             followup_serializer = FollowUpSerializer(followups, many=True)
             feedback_serializer = FeedbackSerializer(feedbacks, many=True)
 
+            searchFilters = SearchFilter.objects.get(client=client)
+            searchFiltersSerializer = SearchFilterSerializer(searchFilters)
+            # return Response(serializer.data)
+
             # Combine the serialized data into a single response
             response_data = client_serializer.data
             response_data['followups'] = followup_serializer.data
             response_data['feedback'] = feedback_serializer.data
+            response_data['searchFilter'] = searchFiltersSerializer.data
 
             return Response(response_data)
         except Client.DoesNotExist:
             return Response({'error': 'Client not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, client_id):
+        client = Client.objects.get(id=client_id)
+        if client:
+            client.delete()
+            return Response({"message": "Client deleted successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
