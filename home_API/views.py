@@ -11,24 +11,7 @@ from .models import Project, Unit, Area, Units, GovernmentalArea, Image
 class ProjectList(APIView):
 
     def get(self, request):
-        # a = Project.objects.all()
-        # projectSerializer = ProjectSerializer(a, many=True)
-        # # print(Project.objects.filter(projectName = 'livience Aventa'))
-        # # print(Project.objects.get(id = 1))
-        # # print(a[1].id)
-        # unit = Unit.objects.all()
-        # unitSerializer = UnitSerializer(unit, many=True)
-        # if unitSerializer.is_valid():
-        #     print(unitSerializer.data)
-        # else:
-        #     print(unitSerializer.errors)
-        # return Response(data=projectSerializer.data)
-        # project_name = request.GET.get('projectName', '')
-        project_name = ''
-
-        # Filter units based on the project name
         units = Unit.objects.all()
-
         serializer = UnitSerializer1(units, many=True)
         return Response(serializer.data)
 
@@ -131,6 +114,60 @@ class ProjectView(APIView):
         data.update({'units': unitSerializer.data})
         return Response(data)
         # return Response(projectSerializer.data.update({'nameme': 'akshay'}))
+
+    def put(self, request, pk):
+        data = request.data
+        try:
+            project_id = pk
+            project = Project.objects.get(pk=project_id)
+
+        except (KeyError, Project.DoesNotExist):
+            return Response(data={'error': 'Invalid project id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        projectSerializer = ProjectSerializer(project, data=data)
+        if projectSerializer.is_valid():
+            try:
+                project_id = pk
+                units_to_delete = Unit.objects.filter(project_id=project_id)
+                if not units_to_delete.exists():
+                    print(f'error: No units found with project_id: {project_id}')
+                    # return Response(data={'error': f'No units found with project_id: {project_id}'},
+                    #                 status=status.HTTP_404_NOT_FOUND)
+
+                units_to_delete.delete()
+                print(f'message:Units deleted successfully')
+                # return Response(data={'message': 'Units deleted successfully'}, status=status.HTTP_200_OK)
+            except KeyError:
+                print(f'error: Invalid request. Project ID not provided.')
+                # return Response(data={'error': 'Invalid request. Project ID not provided.'},
+                #                 status=status.HTTP_400_BAD_REQUEST)
+
+            projectSerializer.save()
+
+            # Process units if included in the request
+            if 'units' in data:
+                units = data.pop('units')
+                for unit in units:
+                    unit['project_id'] = project_id
+                    unit_id = unit.get('id')
+                    if unit_id:
+                        try:
+                            unit_obj = Unit.objects.get(pk=unit_id)
+                        except Unit.DoesNotExist:
+                            return Response(data={'error': f'Invalid unit id: {unit_id}'},
+                                            status=status.HTTP_400_BAD_REQUEST)
+                        unitSerializer = UnitSerializer(unit_obj, data=unit)
+                    else:
+                        unitSerializer = UnitSerializer(data=unit)
+
+                    if unitSerializer.is_valid():
+                        unitSerializer.save()
+                    else:
+                        return Response(data=unitSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(data={}, status=status.HTTP_200_OK)
+        else:
+            return Response(data=projectSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Images(APIView):
