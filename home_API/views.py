@@ -169,6 +169,14 @@ class ProjectView(APIView):
         else:
             return Response(data=projectSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, pk):
+        try:
+            project = Project.objects.get(id=pk)
+            project.delete()
+            return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Project.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 class Images(APIView):
     def get(self, request):
