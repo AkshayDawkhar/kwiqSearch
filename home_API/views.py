@@ -178,6 +178,13 @@ class ProjectView(APIView):
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+class UnitAPIView(APIView):
+    def get(self, request, project_id):
+        unit = Unit.objects.filter(project_id=project_id)
+        unitSerializer = UnitSerializer(unit, many=True)
+        return Response(unitSerializer.data)
+
+
 class Images(APIView):
     def get(self, request):
         a = Image.objects.all()

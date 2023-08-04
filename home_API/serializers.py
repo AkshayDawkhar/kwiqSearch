@@ -16,7 +16,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class UnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unit
-        fields = ['project_id', 'unit', 'CarpetArea', 'price']
+        fields = '__all__'
 
 
 class ProjectSerializer1(serializers.ModelSerializer):
