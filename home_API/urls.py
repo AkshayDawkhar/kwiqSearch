@@ -1,10 +1,12 @@
 from django.urls import path
-from .views import ProjectList, AreaAPIView, OptionsView, ProjectsView, ProjectView, Images, ImageView, UnitAPIView
+from .views import ProjectList, AreaAPIView, OptionsView, ProjectsView, ProjectView, Images, ImageView, UnitAPIView, \
+    InterestedAPIView
 
 urlpatterns = [
     path('projects/', ProjectList.as_view(), name='project-create'),
     path('project/', ProjectsView.as_view(), name='project-create'),
     path('unit/<int:project_id>/', UnitAPIView.as_view(), name='unit'),
+    path('unit/interested/<int:unit_id>/', InterestedAPIView.as_view(), name='get_interested'),
     path('project/<int:pk>', ProjectView.as_view(), name='project-create'),
     path('areas/', AreaAPIView.as_view(), name='area-list'),
     path('areas/<int:pk>/', AreaAPIView.as_view(), name='area-detail'),

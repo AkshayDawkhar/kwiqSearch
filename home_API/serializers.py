@@ -36,7 +36,7 @@ class UnitSerializer1(serializers.ModelSerializer):
 
     class Meta:
         model = Unit
-        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude',
+        fields = ['project_id', 'project_name', 'area', 'rera', 'self', 'CarpetArea', 'price', 'longitude', 'latitude',
                   'amenities']
 
     def get_project_name(self, obj):

@@ -3,6 +3,10 @@ from django.db.utils import IntegrityError
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from client_API.models import SearchFilter
+from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer
+from .helper import Interested, SearchFilterObject
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
     UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer
 from .models import Project, Unit, Area, Units, GovernmentalArea, Image
@@ -154,7 +158,7 @@ class ProjectView(APIView):
                         try:
                             unit_obj = Unit.objects.get(pk=unit_id)
                         except Unit.DoesNotExist:
-                            return Response(data={'error': f'Invalid unit id: {unit_id}'},
+                            return Response(data={'error': f'Invalid self id: {unit_id}'},
                                             status=status.HTTP_400_BAD_REQUEST)
                         unitSerializer = UnitSerializer(unit_obj, data=unit)
                     else:
@@ -183,6 +187,28 @@ class UnitAPIView(APIView):
         unit = Unit.objects.filter(project_id=project_id)
         unitSerializer = UnitSerializer(unit, many=True)
         return Response(unitSerializer.data)
+class InterestedAPIView(APIView):
+    def get(self, request, unit_id):
+        unit = Unit.objects.get(pk=unit_id)
+        # print(unit.serializable_value('self'))
+
+        interested = Interested(unit.id, unit.unit, unit.CarpetArea, unit.price, unit.project_id.area,
+                                unit.project_id.rera)
+        interested.match()
+        searchFilter = SearchFilter.objects.all()
+        searchFilterSerializer = InterestedSearchFilterSerializer(searchFilter, many=True)
+        for s in searchFilterSerializer.data:
+            # print(searchFilter.len())
+            # s = searchFilterSerializer.data[0]
+            searchFilterObject = SearchFilterObject(s.get('id'), s.get('Area'), s.get('startBudget'),
+                                                    s.get('stopBudget'),
+                                                    s.get('startCarpetArea'), s.get('stopCarpetArea'),
+                                                    s.get('possession'),
+                                                    s.get('units'))
+            searchFilterObject.printValue()
+            s['rating'] = interested.compare_objects(searchFilterObject)
+        sorted_data = sorted(searchFilterSerializer.data, key=lambda x: x['rating'], reverse=True)
+        return Response(sorted_data)
 
 
 class Images(APIView):

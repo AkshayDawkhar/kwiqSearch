@@ -14,6 +14,22 @@ class SearchFilterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class InterestedSearchFilterSerializer(serializers.ModelSerializer):
+    fname = serializers.SerializerMethodField()
+    lname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SearchFilter
+        fields = ['client', 'Area', 'startBudget', 'stopBudget', 'startCarpetArea', 'stopCarpetArea', 'possession',
+                  'requirements', 'units', 'fname', 'lname']
+
+    def get_fname(self, obj):
+        return obj.client.fname
+
+    def get_lname(self, obj):
+        return obj.client.lname
+
+
 class FollowUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = FollowUp
