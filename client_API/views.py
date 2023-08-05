@@ -75,6 +75,33 @@ class SearchFilterAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request, id):
+        try:
+            filter_instance = SearchFilter.objects.get(id=id)
+        except SearchFilter.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SearchFilterSerializer(filter_instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def put(self, request, pk):
+    #     # Retrieve the object to update
+    #     try:
+    #         instance = SearchFilter.objects.get(pk=pk)
+    #     except SearchFilterSerializer.DoesNotExist:
+    #         return Response(status=status.HTTP_404_NOT_FOUND)
+    #
+    #     # Update the object with the new data
+    #     serializer = SearchFilterSerializer(instance, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # View for FollowUp model
 class FollowUpsAPIView(APIView):
