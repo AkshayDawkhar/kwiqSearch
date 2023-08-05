@@ -187,6 +187,8 @@ class UnitAPIView(APIView):
         unit = Unit.objects.filter(project_id=project_id)
         unitSerializer = UnitSerializer(unit, many=True)
         return Response(unitSerializer.data)
+
+
 class InterestedAPIView(APIView):
     def get(self, request, unit_id):
         unit = Unit.objects.get(pk=unit_id)
