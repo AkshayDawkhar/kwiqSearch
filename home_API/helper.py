@@ -58,6 +58,30 @@ class SearchFilterObject:
         self.stopCarpetArea = stopCarpetArea  # Float compare to carpet_area
         self.possession = possession  # datetime compare to date
 
+    def compare_objects(self, interested_obj):
+        points = 0
+
+        if interested_obj.project_name in self.Area:
+            points += 100
+
+        if interested_obj.unit in self.units:
+            points += 90
+
+        if self.startBudget <= interested_obj.price <= self.stopBudget:
+            points += 70
+
+        if self.startCarpetArea <= interested_obj.carpet_area <= self.stopCarpetArea:
+            points += 80
+
+        a = self.possession
+        b = interested_obj.date
+
+        if datetime(a.year, a.month, 1) <= datetime(b.year, b.month, 1):
+            points += 60
+
+        print(points)
+        return points
+
     def printValue(self):
         print(type(self.client), self.client)
         print(type(self.Area), self.Area)

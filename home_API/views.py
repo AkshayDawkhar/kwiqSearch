@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from client_API.models import SearchFilter
-from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer
+from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer, FilterSerializer
 from .helper import Interested, SearchFilterObject
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
     UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer
@@ -211,6 +211,62 @@ class InterestedAPIView(APIView):
             s['rating'] = interested.compare_objects(searchFilterObject)
         sorted_data = sorted(searchFilterSerializer.data, key=lambda x: x['rating'], reverse=True)
         return Response(sorted_data)
+
+
+class FilterAPIView(APIView):
+    def post(self, request):
+        print(request.data)
+        filterSerializer = FilterSerializer(data=request.data)
+        if filterSerializer.is_valid():
+            print('valid')
+            searchFilterObject = SearchFilterObject(client=filterSerializer.validated_data.get('client'),
+                                                    Area=filterSerializer.validated_data.get('Area'),
+                                                    startBudget=filterSerializer.validated_data.get('startBudget'),
+                                                    stopBudget=filterSerializer.validated_data.get('stopBudget'),
+                                                    startCarpetArea=filterSerializer.validated_data.get(
+                                                        'startCarpetArea'),
+                                                    stopCarpetArea=filterSerializer.validated_data.get(
+                                                        'stopCarpetArea'),
+                                                    possession=filterSerializer.validated_data.get('possession'),
+                                                    units=filterSerializer.validated_data.get('units'),
+                                                    )
+            unit = Unit.objects.all()
+            unitSerializer1 = UnitSerializer1(unit, many=True)
+            for unit in unitSerializer1.data:
+
+                interested = Interested(unit.get('id'), unit.get('unit'), unit.get('CarpetArea'), unit.get('price'),
+                                        unit.get('project_name'), unit.get('rera'))
+                # print(unit.get('rera'))
+                unit['rating'] = searchFilterObject.compare_objects(interested)
+            sorted_data = sorted(unitSerializer1.data, key=lambda x: x['rating'], reverse=True)
+
+        return Response(sorted_data)
+
+        # try:
+        #     unit = Unit.objects.get(pk=unit_id)
+        # except Unit.DoesNotExist:
+        #     return Response(status=status.HTTP_404_NOT_FOUND)
+        #
+        # interested = Interested(unit.id, unit.unit, unit.CarpetArea, unit.price, unit.project_id.area,
+        #                         unit.project_id.rera)
+        # interested.match()
+        #
+        # search_filters = SearchFilter.objects.all()
+        # search_filter_serializer = InterestedSearchFilterSerializer(search_filters, many=True)
+        # sorted_data = []
+        #
+        # for s in search_filter_serializer.data:
+        #     search_filter_object = SearchFilterObject(
+        #         s.get('client'), s.get('Area'), s.get('startBudget'), s.get('stopBudget'),
+        #         s.get('startCarpetArea'), s.get('stopCarpetArea'), s.get('possession'), s.get('units')
+        #     )
+        #     search_filter_object.match(interested)  # Call the match method to debug
+        #
+        #     s['rating'] = interested.compare_objects(search_filter_object)
+        #     sorted_data.append(s)
+        #
+        # sorted_data.sort(key=lambda x: x['rating'], reverse=True)
+        # return Response(sorted_data)
 
 
 class Images(APIView):

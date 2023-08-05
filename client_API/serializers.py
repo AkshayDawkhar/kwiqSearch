@@ -14,6 +14,20 @@ class SearchFilterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SearchFilter
+        fields = [
+            'Area',
+            'startBudget',
+            'stopBudget',
+            'startCarpetArea',
+            'stopCarpetArea',
+            'possession',
+            'units',
+        ]
+
+
 class InterestedSearchFilterSerializer(serializers.ModelSerializer):
     fname = serializers.SerializerMethodField()
     lname = serializers.SerializerMethodField()
