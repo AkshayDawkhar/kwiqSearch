@@ -21,7 +21,8 @@ class Interested:
 
     def compare_objects(self, filter_obj):
         points = 0
-
+        print(self.project_name)
+        print(filter_obj.Area)
         # Compare project_name with Area
         if self.project_name in filter_obj.Area:
             points += 100
@@ -59,19 +60,38 @@ class SearchFilterObject:
         self.possession = possession  # datetime compare to date
 
     def compare_objects(self, interested_obj):
+        print(interested_obj.project_name)
+        print(self.Area)
         points = 0
+        for a in self.Area:
+            print(a.formatted_version)
+            # area.append(a.formatted_version)
+            if interested_obj.project_name == a.formatted_version:
+                points += 100
+                break
+        #
+        # if interested_obj.project_name in area:
+        #     points += 100
 
-        if interested_obj.project_name in self.Area:
-            points += 100
+        for a in self.units:
+            if interested_obj.unit == a.value:
+                points += 90
+                break
 
-        if interested_obj.unit in self.units:
-            points += 90
+        # if interested_obj.unit in self.units:
+        #     points += 90
+        # print(self.units)
+        if self.startBudget <= interested_obj.price:
+            points += 35
 
-        if self.startBudget <= interested_obj.price <= self.stopBudget:
-            points += 70
+        if interested_obj.price <= self.stopBudget:
+            points += 35
 
-        if self.startCarpetArea <= interested_obj.carpet_area <= self.stopCarpetArea:
-            points += 80
+        if self.startCarpetArea <= interested_obj.carpet_area:
+            points += 40
+
+        if interested_obj.carpet_area <= self.stopCarpetArea:
+            points += 40
 
         a = self.possession
         b = interested_obj.date

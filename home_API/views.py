@@ -235,7 +235,7 @@ class FilterAPIView(APIView):
             for unit in unitSerializer1.data:
 
                 interested = Interested(unit.get('id'), unit.get('unit'), unit.get('CarpetArea'), unit.get('price'),
-                                        unit.get('project_name'), unit.get('rera'))
+                                        unit.get('area'), unit.get('rera'))
                 # print(unit.get('rera'))
                 unit['rating'] = searchFilterObject.compare_objects(interested)
             sorted_data = sorted(unitSerializer1.data, key=lambda x: x['rating'], reverse=True)
