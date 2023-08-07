@@ -28,7 +28,7 @@ class ProjectSerializer1(serializers.ModelSerializer):
 class UnitSerializer1(serializers.ModelSerializer):
     project_name = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
-    rera = serializers.SerializerMethodField()
+    possession = serializers.SerializerMethodField()
     longitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
@@ -36,7 +36,7 @@ class UnitSerializer1(serializers.ModelSerializer):
 
     class Meta:
         model = Unit
-        fields = ['project_id', 'project_name', 'area', 'rera', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude',
+        fields = ['project_id', 'project_name', 'area', 'possession', 'unit', 'CarpetArea', 'price', 'longitude', 'latitude',
                   'amenities']
 
     def get_project_name(self, obj):
@@ -45,8 +45,8 @@ class UnitSerializer1(serializers.ModelSerializer):
     def get_area(self, obj):
         return obj.project_id.area
 
-    def get_rera(self, obj):
-        return obj.project_id.rera
+    def get_possession(self, obj):
+        return obj.project_id.possession
 
     def get_longitude(self, obj):
         return obj.project_id.longitude
