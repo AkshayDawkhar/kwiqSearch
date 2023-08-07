@@ -95,8 +95,7 @@ class SearchFilterObject:
 
         a = self.possession
         b = interested_obj.date
-
-        if datetime(a.year, a.month, 1) <= datetime(b.year, b.month, 1):
+        if datetime(a.year, a.month, 1) >= datetime(b.year, b.month, 1):
             points += 60
 
         print(points)
