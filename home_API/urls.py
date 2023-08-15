@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import ProjectList, AreaAPIView, OptionsView, ProjectsView, ProjectView, Images, ImageView, UnitAPIView, \
-    InterestedAPIView, FilterAPIView
+    InterestedAPIView, FilterAPIView, FloorMaps, FloorMapView
 
 urlpatterns = [
     path('projects/', ProjectList.as_view(), name='project-create'),
@@ -13,6 +13,8 @@ urlpatterns = [
     path('areas/<int:pk>/', AreaAPIView.as_view(), name='area-detail'),
     path('options/', OptionsView.as_view(), name='Option-detail'),
     path('images/', Images.as_view()),
-    path('image/<int:pk>/', ImageView.as_view())
+    path('image/<int:pk>/', ImageView.as_view()),
+    path('FloorMaps/', FloorMaps.as_view()),
+    path('FloorMap/<int:pk>/', FloorMapView.as_view()),
     # path('projects-filter/', ProjectSearchAPIView.as_view(), name='project-filter'),
 ]

@@ -8,8 +8,8 @@ from client_API.models import SearchFilter
 from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer, FilterSerializer
 from .helper import Interested, SearchFilterObject
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
-    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer
-from .models import Project, Unit, Area, Units, GovernmentalArea, Image
+    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer
+from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
 
 
 class ProjectList(APIView):
@@ -298,3 +298,34 @@ class ImageView(APIView):
             return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except Image.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class FloorMaps(APIView):
+    def get(self, request):
+        a = FloorMap.objects.all()
+        b = FloorMapSerializer(a, many=True)
+        return Response(b.data)
+
+    def post(self, request):
+        a = FloorMapSerializer(data=request.data)
+        if a.is_valid():
+            a.save()
+            return Response(a.data, status=status.HTTP_200_OK)
+        else:
+            return Response(a.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FloorMapView(APIView):
+
+    def get(self, request, pk):
+        a = FloorMap.objects.get(id=pk)
+        b = FloorMapSerializer(a)
+        return Response(b.data)
+
+    def delete(self, request, pk):
+        try:
+            image = FloorMap.objects.get(id=pk)
+            image.delete()
+            return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except FloorMap.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+

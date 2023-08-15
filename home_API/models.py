@@ -93,3 +93,16 @@ class Image(models.Model):
             if os.path.isfile(self.image.path):
                 os.remove(self.image.path)
         super().delete(*args, **kwargs)
+
+
+class FloorMap(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='Images/FloorMap/')
+    unit_id = models.ForeignKey(Unit, on_delete=models.CASCADE)
+
+    def delete(self, *args, **kwargs):
+        # Delete the image file from the file system before deleting the model instance
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)

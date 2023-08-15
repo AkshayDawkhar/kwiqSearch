@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Unit, Area, Units, GovernmentalArea, Image
+from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -90,8 +90,16 @@ class ProjectsSerializer(serializers.ModelSerializer):
 
 
 class ImageSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(max_length=None, use_url=True, default='Images/None/no0img.jpg')
+    image = serializers.ImageField(max_length=None, use_url=True)
 
     class Meta:
         model = Image
+        fields = '__all__'
+
+
+class FloorMapSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True)
+
+    class Meta:
+        model = FloorMap
         fields = '__all__'
