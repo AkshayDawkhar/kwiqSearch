@@ -84,7 +84,8 @@ class Area(models.Model):
 
 class Image(models.Model):
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='Images/', default='Images/None/no0img.jpg')
+    image = models.ImageField(upload_to='Images/')
+    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def delete(self, *args, **kwargs):
         # Delete the image file from the file system before deleting the model instance
