@@ -4,13 +4,23 @@ from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMa
 
 class ProjectSerializer(serializers.ModelSerializer):
     # units = UnitSerializer(many=True)
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
         fields = ['area', 'projectName', 'projectType', 'developerName', 'landParcel', 'landmark', 'areaIn',
                   'waterSupply', 'floors', 'flatsPerFloors', 'totalUnit', 'availableUnit', 'amenities', 'parking',
                   'longitude', 'latitude', 'transport', 'readyToMove', 'power', 'goods', 'rera',
                   'possession', 'contactPerson', 'contactNumber', 'marketValue', 'lifts', 'brokerage', 'incentive',
-                  ]
+                  'image', ]
+
+    def get_image(self, obj):
+        images = Image.objects.filter(project_id=obj.id)
+
+        if images.exists():
+            first_image_serializer = ImageSerializer(images.first())
+            return first_image_serializer.data.get('image')
+        return None
 
 
 class UnitSerializer(serializers.ModelSerializer):
@@ -98,9 +108,19 @@ class GovernmentalAreaSerializer(serializers.ModelSerializer):
 
 
 class ProjectsSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
-        fields = ['id', 'area', 'projectName', 'developerName']
+        fields = ['id', 'area', 'projectName', 'developerName', 'image']
+
+    def get_image(self, obj):
+        images = Image.objects.filter(project_id=obj.id)
+
+        if images.exists():
+            first_image_serializer = ImageSerializer(images.first())
+            return first_image_serializer.data.get('image')
+        return None
 
 
 class ImageSerializer(serializers.ModelSerializer):

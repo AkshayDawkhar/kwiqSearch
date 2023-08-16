@@ -110,6 +110,7 @@ class ProjectsView(APIView):
 
 class ProjectView(APIView):
     def get(self, request, pk):
+        # TODO transform it to serializer
         project = Project.objects.get(id=pk)
         projectSerializer = ProjectSerializer(project)
         data = projectSerializer.data
