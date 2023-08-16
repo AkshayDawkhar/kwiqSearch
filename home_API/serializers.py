@@ -14,9 +14,23 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class UnitSerializer(serializers.ModelSerializer):
+    floor_map = serializers.SerializerMethodField()
+
     class Meta:
         model = Unit
-        fields = '__all__'
+        fields = [
+            'id',
+            'project_id',
+            'unit',
+            'CarpetArea',
+            'price',
+            'floor_map'
+        ]
+
+    def get_floor_map(self, obj):
+        data = FloorMap.objects.filter(unit=obj.id)
+        serialize = FloorMapSerializer(data, many=True)
+        return serialize.data
 
 
 class ProjectSerializer1(serializers.ModelSerializer):

@@ -233,7 +233,6 @@ class FilterAPIView(APIView):
             unit = Unit.objects.all()
             unitSerializer1 = UnitSerializer1(unit, many=True)
             for unit in unitSerializer1.data:
-
                 interested = Interested(unit.get('id'), unit.get('unit'), unit.get('CarpetArea'), unit.get('price'),
                                         unit.get('area'), unit.get('possession'))
                 # print(unit.get('rera'))
@@ -279,7 +278,7 @@ class Images(APIView):
         a = ImageSerializer(data=request.data)
         if a.is_valid():
             a.save()
-            return Response(a.data, status=status.HTTP_200_OK)
+            return Response(a.data, status=status.HTTP_201_CREATED)
         else:
             return Response(a.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -299,6 +298,7 @@ class ImageView(APIView):
         except Image.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
 
+
 class FloorMaps(APIView):
     def get(self, request):
         a = FloorMap.objects.all()
@@ -309,7 +309,7 @@ class FloorMaps(APIView):
         a = FloorMapSerializer(data=request.data)
         if a.is_valid():
             a.save()
-            return Response(a.data, status=status.HTTP_200_OK)
+            return Response(a.data, status=status.HTTP_201_CREATED)
         else:
             return Response(a.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -328,4 +328,3 @@ class FloorMapView(APIView):
             return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except FloorMap.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
-
