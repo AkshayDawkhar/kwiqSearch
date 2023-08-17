@@ -8,7 +8,8 @@ from client_API.models import SearchFilter
 from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer, FilterSerializer
 from .helper import Interested, SearchFilterObject
 from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
-    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer
+    UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer, \
+    ProjectDetailsSerializer
 from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
 
 
@@ -299,6 +300,22 @@ class ImageView(APIView):
         except Image.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    def put(self, request, pk):
+        try:
+            image = Image.objects.get(id=pk)
+        except Image.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the existing image
+        image.delete()
+
+        # Create a new instance with the updated data
+        serializer = ImageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FloorMaps(APIView):
     def get(self, request):
@@ -329,3 +346,40 @@ class FloorMapView(APIView):
             return Response({"message": "Image deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except FloorMap.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        try:
+            image = FloorMap.objects.get(id=pk)
+        except FloorMap.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the existing image
+        image.delete()
+
+        # Create a new instance with the updated data
+        serializer = FloorMapSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectDetails(AreaAPIView):
+    def get(self, request, id):
+        project = Project.objects.get(id=id)
+        projectSerializer = ProjectDetailsSerializer(project)
+        return Response(projectSerializer.data)
+
+
+class ProjectImages(AreaAPIView):
+    def get(self, request, id):
+        images = Image.objects.filter(project_id=id)
+        imagesSerializer = ImageSerializer(images, many=True)
+        return Response(imagesSerializer.data)
+
+
+class UnitImages(AreaAPIView):
+    def get(self, request, id):
+        images = FloorMap.objects.filter(unit=id)
+        imagesSerializer = FloorMapSerializer(images, many=True)
+        return Response(imagesSerializer.data)

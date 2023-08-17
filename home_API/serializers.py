@@ -23,6 +23,30 @@ class ProjectSerializer(serializers.ModelSerializer):
         return None
 
 
+class ProjectDetailsSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    units = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = ['id', 'area', 'projectName', 'projectType', 'developerName', 'landmark', 'areaIn', 'amenities',
+                  'parking',
+                  'transport', 'readyToMove', 'power', 'goods', 'rera', 'possession', 'image', 'units', ]
+
+    def get_image(self, obj):
+        images = Image.objects.filter(project_id=obj.id)
+
+        if images.exists():
+            first_image_serializer = ImageSerializer(images.first())
+            return first_image_serializer.data.get('image')
+        return None
+
+    def get_units(self, obj):
+        units = Unit.objects.filter(project_id=obj.id)
+        serializedUnit = UnitSerializer(units, many=True)
+        return serializedUnit.data
+
+
 class UnitSerializer(serializers.ModelSerializer):
     floor_map = serializers.SerializerMethodField()
 
@@ -58,12 +82,13 @@ class UnitSerializer1(serializers.ModelSerializer):
     latitude = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     project_units = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Unit
         fields = ['project_id', 'project_name', 'area', 'possession', 'unit', 'CarpetArea', 'price', 'longitude',
                   'latitude',
-                  'amenities', 'project_units']
+                  'amenities', 'project_units', 'image']
 
     def get_project_units(self, obj):
         unit = Unit.objects.filter(project_id=obj.project_id)
@@ -87,6 +112,14 @@ class UnitSerializer1(serializers.ModelSerializer):
 
     def get_amenities(self, obj):
         return obj.project_id.amenities
+
+    def get_image(self, obj):
+        images = Image.objects.filter(project_id=obj.project_id)
+
+        if images.exists():
+            first_image_serializer = ImageSerializer(images.first())
+            return first_image_serializer.data.get('image')
+        return None
 
 
 class AreaSerializer(serializers.ModelSerializer):
