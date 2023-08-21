@@ -1,9 +1,11 @@
 from django.urls import path
 from .views import ProjectList, AreaAPIView, OptionsView, ProjectsView, ProjectView, Images, ImageView, UnitAPIView, \
-    InterestedAPIView, FilterAPIView, FloorMaps, FloorMapView, ProjectDetails, ProjectImages, UnitImages
+    InterestedAPIView, FilterAPIView, FloorMaps, FloorMapView, ProjectDetails, ProjectImages, UnitImages, ProjectListTry
+from rest_framework.routers import DefaultRouter
 
 urlpatterns = [
     path('projects/', ProjectList.as_view(), name='project-create'),
+    # path('projects/try/', ProjectListTry.as_view(), name='project-create'),
     path('project/', ProjectsView.as_view(), name='project-create'),
     path('unit/<int:project_id>/', UnitAPIView.as_view(), name='unit'),
     path('unit/interested/<int:unit_id>/', InterestedAPIView.as_view(), name='get_interested'),
@@ -21,3 +23,6 @@ urlpatterns = [
     path('FloorMap/<int:pk>/', FloorMapView.as_view()),
     # path('projects-filter/', ProjectSearchAPIView.as_view(), name='project-filter'),
 ]
+router = DefaultRouter()
+router.register('user', ProjectListTry, basename='user')
+urlpatterns += router.urls

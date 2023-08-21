@@ -11,11 +11,21 @@ from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, 
     UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer, \
     ProjectDetailsSerializer
 from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
+
+class ProjectListTry(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UnitSerializer1
+    queryset = Unit.objects.all()
 
 
 class ProjectList(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
+        permission_classes = (IsAuthenticated,)
         units = Unit.objects.all()
         serializer = UnitSerializer1(units, many=True)
         return Response(serializer.data)
