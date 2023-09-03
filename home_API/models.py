@@ -33,6 +33,7 @@ class Project(models.Model):
     lifts = models.IntegerField()
     brokerage = models.FloatField()
     incentive = models.IntegerField()
+    url = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return f'{self.projectName} {self.area}'

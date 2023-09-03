@@ -12,7 +12,7 @@ class ProjectSerializer(serializers.ModelSerializer):
                   'waterSupply', 'floors', 'flatsPerFloors', 'totalUnit', 'availableUnit', 'amenities', 'parking',
                   'longitude', 'latitude', 'transport', 'readyToMove', 'power', 'goods', 'rera',
                   'possession', 'contactPerson', 'contactNumber', 'marketValue', 'lifts', 'brokerage', 'incentive',
-                  'image', ]
+                  'image', 'url']
 
     def get_image(self, obj):
         images = Image.objects.filter(project_id=obj.id)
@@ -31,7 +31,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'area', 'projectName', 'projectType', 'developerName', 'landmark', 'areaIn', 'amenities',
                   'parking',
-                  'transport', 'readyToMove', 'power', 'goods', 'rera', 'possession', 'image', 'units', ]
+                  'transport', 'readyToMove', 'power', 'goods', 'rera', 'possession', 'image', 'units', 'url']
 
     def get_image(self, obj):
         images = Image.objects.filter(project_id=obj.id)
