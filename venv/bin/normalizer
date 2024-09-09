@@ -1,4 +1,4 @@
-#!/home/arch/code/kwiqSearch/venv/bin/python3
+#!/home/akshay/code/kwiqSearch/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
