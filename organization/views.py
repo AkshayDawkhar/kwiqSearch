@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -119,5 +119,33 @@ class Profile(APIView):
                              'user_type': user.user_type,
                              'organization': user.organization.name,
                              'locality': user.locality,
-                             'assigned_to': user.assigned_to.id if user.assigned_to else None
+                             'assigned_to': user.assigned_to.id if user.assigned_to else None,
+                             'phone_number': user.phone_number
                              })
+
+    def put(self, request):
+        # Get the authenticated user
+        user = request.user
+
+        # Get the data from the request
+        name = request.data.get('name', None)
+        email = request.data.get('email', None)
+        organization = request.data.get('organization', None)
+        locality = request.data.get('locality', None)
+        phone_number = request.data.get('phone_number', None)
+
+        # Update the fields if the data is provided
+        if name:
+            user.name = name
+        if email:
+            user.email = email
+        if organization:
+            user.organization.name = organization
+        if locality:
+            user.locality = locality
+        if phone_number:
+            user.phone_number = phone_number
+        # Save the updated user profile
+        user.save()
+
+        return Response({'message': 'Profile updated successfully'}, status=status.HTTP_200_OK)
