@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, logout, login
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.shortcuts import render
 
@@ -24,20 +25,13 @@ class OrganizationDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
 
-class EmployeeList(generics.ListCreateAPIView):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+
 
 class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
-class EmployeeListByOrganization(generics.ListAPIView):
-    serializer_class = EmployeeSerializer
 
-    def get_queryset(self):
-        organization = self.kwargs['organization']
-        return Employee.objects.filter(organization=organization)
 
 class EmployeeListByOrganizationAndUserType(generics.ListAPIView):
     serializer_class = EmployeeSerializer
@@ -108,44 +102,43 @@ class CreateEmployee(APIView):
 
 class Profile(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user_id = request.query_params.get('id', None)
         if user_id:
             user = Employee.objects.get(id=user_id)
         else:
             user = request.user
-        return Response({'name': user.name,
-                             'email': user.email,
-                             'user_type': user.user_type,
-                             'organization': user.organization.name,
-                             'locality': user.locality,
-                             'assigned_to': user.assigned_to.id if user.assigned_to else None,
-                             'phone_number': user.phone_number
-                             })
+        serializer = EmployeeSerializer(user)
+        return Response(serializer.data)
 
     def put(self, request):
-        # Get the authenticated user
         user = request.user
+        serializer = EmployeeSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Profile updated successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the data from the request
-        name = request.data.get('name', None)
-        email = request.data.get('email', None)
-        organization = request.data.get('organization', None)
-        locality = request.data.get('locality', None)
-        phone_number = request.data.get('phone_number', None)
+class EmployeeListByOrganization(generics.ListAPIView):
+    serializer_class = EmployeeSerializer
+    permission_classes = [IsAuthenticated]
 
-        # Update the fields if the data is provided
-        if name:
-            user.name = name
-        if email:
-            user.email = email
-        if organization:
-            user.organization.name = organization
-        if locality:
-            user.locality = locality
-        if phone_number:
-            user.phone_number = phone_number
-        # Save the updated user profile
-        user.save()
+    def get_queryset(self):
+        # organization = self.kwargs['organization']
+        organization = self.request.user.organization
+        return Employee.objects.filter(organization=organization)
 
-        return Response({'message': 'Profile updated successfully'}, status=status.HTTP_200_OK)
+class EmployeeView(APIView):
+    serializer_class = EmployeeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        data['organization'] = request.user.organization.id
+        data['password'] = make_password(data.get('password'))
+        serializer = EmployeeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Employee Created'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
