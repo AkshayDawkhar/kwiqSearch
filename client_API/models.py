@@ -3,26 +3,27 @@ from home_API.models import Area, Units
 
 
 class Client(models.Model):
-    fname = models.CharField(max_length=100)
-    lname = models.CharField(max_length=100)
-    phoneNO = models.PositiveBigIntegerField()
-    massageNO = models.PositiveBigIntegerField()
-    email = models.EmailField(unique=True)
-
+    fname = models.CharField(max_length=100, blank=True, null=True)
+    lname = models.CharField(max_length=100, blank=True,null=True)
+    phoneNO = models.PositiveBigIntegerField(blank=True, null=True,default=0)
+    massageNO = models.PositiveBigIntegerField(blank=True, null=True,default=0)
+    email = models.EmailField(blank=True, null=True)
+    added_by = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='added_clients', null=True, blank=True)
+    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='clients', null=True, blank=True)
     def __str__(self):
         return f"{self.fname} {self.lname}"
 
 
 class SearchFilter(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    Area = models.ManyToManyField(Area)
+    Area = models.ManyToManyField(Area, null=True, blank=True)
     startBudget = models.FloatField()
     stopBudget = models.FloatField()
     startCarpetArea = models.FloatField()
     stopCarpetArea = models.FloatField()
     possession = models.DateTimeField()
-    requirements = models.CharField(max_length=200)
-    units = models.ManyToManyField(Units)
+    requirements = models.CharField(max_length=200, blank=True, null=True)
+    units = models.ManyToManyField(Units, null=True, blank=True)
 
     # Add fields for specific search criteria (e.g., location, price range, category, etc.)
 

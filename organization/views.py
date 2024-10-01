@@ -15,7 +15,8 @@ from urllib3 import request
 
 from .models import Organization, Employee
 
-from .serializers import OrganizationSerializer, EmployeeSerializer
+from .serializers import OrganizationSerializer, CreateEmployeeSerializer, EmployeeSerializer
+
 
 class OrganizationList(generics.ListCreateAPIView):
     queryset = Organization.objects.all()
@@ -29,12 +30,12 @@ class OrganizationDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+    serializer_class = CreateEmployeeSerializer
 
 
 
 class EmployeeListByOrganizationAndUserType(generics.ListAPIView):
-    serializer_class = EmployeeSerializer
+    serializer_class = CreateEmployeeSerializer
 
     def get_queryset(self):
         organization = self.kwargs['organization']
@@ -50,7 +51,10 @@ class Login(APIView):
         email = request.data.get('email')
         password = request.data.get('password')
         print(organization_id, email, password)
-        u = Employee.objects.get(email=email, organization_id=organization_id)
+        try:
+            u = Employee.objects.get(email=email, organization_id=organization_id)
+        except Employee.DoesNotExist:
+            return Response({'message': 'Login Failed'}, status=401)
         print(u)
         user = authenticate(username=u.username,password=password)
         print(user)
@@ -114,14 +118,14 @@ class Profile(APIView):
 
     def put(self, request):
         user = request.user
-        serializer = EmployeeSerializer(user, data=request.data, partial=True)
+        serializer = CreateEmployeeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Profile updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class EmployeeListByOrganization(generics.ListAPIView):
-    serializer_class = EmployeeSerializer
+    serializer_class = CreateEmployeeSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -130,14 +134,14 @@ class EmployeeListByOrganization(generics.ListAPIView):
         return Employee.objects.filter(organization=organization)
 
 class EmployeeView(APIView):
-    serializer_class = EmployeeSerializer
+    serializer_class = CreateEmployeeSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.data
         data['organization'] = request.user.organization.id
         data['password'] = make_password(data.get('password'))
-        serializer = EmployeeSerializer(data=request.data)
+        serializer = CreateEmployeeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Employee Created'}, status=status.HTTP_201_CREATED)

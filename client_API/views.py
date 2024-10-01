@@ -1,6 +1,7 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from .models import Client, SearchFilter, FollowUp, Feedback
 from .serializers import ClientSerializer, SearchFilterSerializer, FollowUpSerializer, FeedbackSerializer, \
     FollowUpDateSerializer
@@ -10,6 +11,7 @@ from datetime import datetime
 
 # View for Client model
 class ClientAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         clients = Client.objects.all()
         serializer = ClientSerializer(clients, many=True)
@@ -23,13 +25,18 @@ class ClientAPIView(APIView):
     #         return Response(serializer.data, status=status.HTTP_201_CREATED)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def post(self, request):
-        client_serializer = ClientSerializer(data=request.data)
+        data = request.data
+        data['added_by'] = request.user.id
+        data['organization'] = request.user.organization.id
+        client_serializer = ClientSerializer(data=data)
         if client_serializer.is_valid():
             client = client_serializer.save()
 
             # Create SearchFilter instance associated with the newly created client
             search_filter_data = request.data.get('search_filter', {})
             search_filter_data['client'] = client.id
+            # search_filter_data['added_by'] = request.user.id
+
             search_filter_serializer = SearchFilterSerializer(data=search_filter_data)
 
             if search_filter_serializer.is_valid():
@@ -234,3 +241,12 @@ class ClientDetailsAPIView(APIView):
             client.delete()
             return Response({"message": "Client deleted successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ClientListView(generics.ListAPIView):
+    serializer_class = ClientSerializer
+    # permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # organization = self.request.user.organization
+        # return Client.objects.filter(organization=organization)
+        return Client.objects.all()
