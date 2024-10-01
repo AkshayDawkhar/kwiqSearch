@@ -1,3 +1,6 @@
+from re import search
+
+from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -249,4 +252,7 @@ class ClientListView(generics.ListAPIView):
     def get_queryset(self):
         # organization = self.request.user.organization
         # return Client.objects.filter(organization=organization)
-        return Client.objects.all()
+        search_query = self.request.query_params.get('search_query', None)
+        if search_query:
+            return Client.objects.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
+        return Client.objects.all().order_by('-created_on')
