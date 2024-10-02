@@ -3,10 +3,28 @@ from .models import Client, SearchFilter, FollowUp, Feedback
 
 
 class ClientSerializer(serializers.ModelSerializer):
+    assigned_to = serializers.SerializerMethodField()
     class Meta:
         model = Client
-        fields = '__all__'
-
+        fields = [
+            'id',
+            'fname',
+            'lname',
+            'phoneNO',
+            'massageNO',
+            'email',
+            'added_by',
+            'organization',
+            'created_on',
+            'assigned_to',
+            ]
+    def get_assigned_to(self, obj):
+        # return obj.assigned_to.username if obj.assigned_to else None
+        if obj.assigned_to:
+            return {
+                'id': obj.assigned_to.id,
+                'username': obj.assigned_to.username
+            }
 
 class SearchFilterSerializer(serializers.ModelSerializer):
     class Meta:
