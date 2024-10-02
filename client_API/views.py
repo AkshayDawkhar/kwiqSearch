@@ -247,12 +247,17 @@ class ClientDetailsAPIView(APIView):
 
 class ClientListView(generics.ListAPIView):
     serializer_class = ClientSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # organization = self.request.user.organization
         # return Client.objects.filter(organization=organization)
         search_query = self.request.query_params.get('search_query', None)
+        query = Client.objects.filter(organization=self.request.user.organization)
+        # print headers
         if search_query:
-            return Client.objects.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
-        return Client.objects.all().order_by('-created_on')
+            # return Client.objects.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
+            query = query.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
+        else:
+            query = query.order_by('-created_on')
+        return query
