@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.db.utils import IntegrityError
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -14,7 +15,7 @@ from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMa
 
 
 class ProjectList(APIView):
-
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         units = Unit.objects.all()
         serializer = UnitSerializer1(units, many=True)
@@ -22,6 +23,10 @@ class ProjectList(APIView):
 
     def post(self, request):
         data = request.data
+        data['created_on'] = datetime.now()
+        data['added_by'] = request.user.id
+        data['organization'] = request.user.organization.id
+
         units = data.pop('units')
         projectSerializer = ProjectSerializer(data=request.data)
         if projectSerializer.is_valid():
@@ -30,6 +35,7 @@ class ProjectList(APIView):
             print(a.id, a.area)
             for unit in units:
                 unit['project_id'] = a.id
+                unit['organization'] = request.user.organization.id
                 unitSerializer = UnitSerializer(data=unit)
                 if unitSerializer.is_valid():
                     u = unitSerializer.save()

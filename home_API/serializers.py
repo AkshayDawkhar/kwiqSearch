@@ -12,7 +12,7 @@ class ProjectSerializer(serializers.ModelSerializer):
                   'waterSupply', 'floors', 'flatsPerFloors', 'totalUnit', 'availableUnit', 'amenities', 'parking',
                   'longitude', 'latitude', 'transport', 'readyToMove', 'power', 'goods', 'rera',
                   'possession', 'contactPerson', 'contactNumber', 'marketValue', 'lifts', 'brokerage', 'incentive',
-                  'image', 'url']
+                  'image', 'url', 'created_on', 'added_by', 'organization']
 
     def get_image(self, obj):
         images = Image.objects.filter(project_id=obj.id)
@@ -58,7 +58,8 @@ class UnitSerializer(serializers.ModelSerializer):
             'unit',
             'CarpetArea',
             'price',
-            'floor_map'
+            'floor_map',
+            'organization'
         ]
 
     def get_floor_map(self, obj):

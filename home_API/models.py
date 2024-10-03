@@ -34,7 +34,11 @@ class Project(models.Model):
     brokerage = models.FloatField()
     incentive = models.IntegerField()
     url = models.CharField(max_length=200, blank=True)
-
+    created_on = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='added_projects',
+                                 null=True, blank=True)
+    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='projects',
+                                     null=True, blank=True)
     def __str__(self):
         return f'{self.projectName} {self.area}'
 
@@ -52,7 +56,8 @@ class Unit(models.Model):
     unit = models.FloatField()
     CarpetArea = models.IntegerField()
     price = models.IntegerField()
-
+    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='units',
+                                     null=True, blank=True)
     def __str__(self):
         return f"{self.unit} {self.project_id.projectName}"
 
