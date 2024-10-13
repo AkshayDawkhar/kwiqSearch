@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from urllib3 import request
+from django.db.models import Case, When
 
 # from setuptools.package_index import user_agent
 
@@ -131,7 +132,16 @@ class EmployeeListByOrganization(generics.ListAPIView):
     def get_queryset(self):
         # organization = self.kwargs['organization']
         organization = self.request.user.organization
-        return Employee.objects.filter(organization=organization)
+        user_order = Case(
+            When(user_type='CEO', then=0),
+            When(user_type='Manager', then=1),
+            When(user_type='LocalityManager', then=2),
+            When(user_type='VisitorCaller', then=3),
+            When(user_type='Caller', then=4),
+            When(user_type='Visitor', then=5),
+            default=6,  # This handles any other values that might be in user_type
+        )
+        return Employee.objects.filter(organization=organization).order_by(user_order)
 
 class EmployeeView(APIView):
     serializer_class = CreateEmployeeSerializer

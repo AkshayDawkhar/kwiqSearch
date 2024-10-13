@@ -1,10 +1,12 @@
 from datetime import datetime
+
+from django.db.models import Q
 from django.db.utils import IntegrityError
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework import generics as genrics
 from client_API.models import SearchFilter
 from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer, FilterSerializer
 from .helper import Interested, SearchFilterObject
@@ -114,6 +116,22 @@ class ProjectsView(APIView):
         projectsSerializer = ProjectsSerializer(project, many=True)
         return Response(projectsSerializer.data)
 
+class ProjectsListView(genrics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProjectsSerializer
+
+    def get_queryset(self):
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            return Project.objects.filter(
+            Q(
+                Q(projectName__icontains=search_query) |
+                Q(area__icontains=search_query) |
+                Q(developerName__icontains=search_query)
+            ) & Q(organization=self.request.user.organization)
+            ).order_by('-created_on')
+        return Project.objects.filter(organization=self.request.user.organization
+        ).order_by('-created_on')
 
 class ProjectView(APIView):
     def get(self, request, pk):

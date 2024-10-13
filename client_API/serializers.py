@@ -1,9 +1,15 @@
 from rest_framework import serializers
+
+from organization.models import Employee
 from .models import Client, SearchFilter, FollowUp, Feedback
 
+class ClientEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ['id', 'name','email']
 
 class ClientSerializer(serializers.ModelSerializer):
-    assigned_to = serializers.SerializerMethodField()
+    assignees_to = ClientEmployeeSerializer(many=True)
     class Meta:
         model = Client
         fields = [
@@ -16,15 +22,15 @@ class ClientSerializer(serializers.ModelSerializer):
             'added_by',
             'organization',
             'created_on',
-            'assigned_to',
+            'assignees_to',
             ]
-    def get_assigned_to(self, obj):
-        # return obj.assigned_to.username if obj.assigned_to else None
-        if obj.assigned_to:
-            return {
-                'id': obj.assigned_to.id,
-                'username': obj.assigned_to.username
-            }
+    # def get_assigned_to(self, obj):
+    #     # return obj.assigned_to.username if obj.assigned_to else None
+    #     if obj.assigned_to:
+    #         return {
+    #             'id': obj.assigned_to.id,
+    #             'username': obj.assigned_to.username
+    #         }
 
 class SearchFilterSerializer(serializers.ModelSerializer):
     class Meta:

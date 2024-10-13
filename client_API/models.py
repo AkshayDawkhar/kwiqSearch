@@ -11,7 +11,8 @@ class Client(models.Model):
     added_by = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='added_clients', null=True, blank=True)
     organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='clients', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    assigned_to = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='assigned_clients', null=True, blank=True)
+    # assigned_to = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='assigned_clients', null=True, blank=True)
+    assignees_to = models.ManyToManyField('organization.Employee', related_name='assigned_clients', null=True, blank=True)
 
     def __str__(self):
         return f"{self.fname} {self.lname}"

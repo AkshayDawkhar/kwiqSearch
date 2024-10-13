@@ -1,14 +1,19 @@
+from os import remove
 from re import search
 
-from django.db.models import Q
+from django.db.models import Q, Case, When
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+
+from organization.models import Employee
+from organization.serializers import EmployeeSerializer
 from .models import Client, SearchFilter, FollowUp, Feedback
 from .serializers import ClientSerializer, SearchFilterSerializer, FollowUpSerializer, FeedbackSerializer, \
     FollowUpDateSerializer
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from datetime import datetime
 
 
@@ -200,7 +205,9 @@ class FollowUpDate(APIView):
 
 
 class ClientDetailsAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
     def get(self, request, client_id):
+        print(request.headers)
         try:
             # Get the client instance based on the provided client_id
             client = Client.objects.get(id=client_id)
@@ -261,3 +268,64 @@ class ClientListView(generics.ListAPIView):
         else:
             query = query.order_by('-created_on')
         return query
+
+class ClientEmployeeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        employee_ids = request.data.get('employee_ids', [])
+        client_id = request.data.get('client_id')
+        if not client_id:
+            return Response({'error': 'client_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        client = get_object_or_404(Client, id=client_id, organization=request.user.organization)
+        employees = Employee.objects.filter(id__in=employee_ids, organization=request.user.organization)
+        # get new employees
+        new_employees = employees.exclude(id__in=client.assignees_to.values_list('id', flat=True))
+        print(new_employees)
+        removed_employees = client.assignees_to.exclude(id__in=employee_ids)
+        print(removed_employees)
+        client.assignees_to.set(employees)
+        return Response({'message': 'Employee assigned to client successfully'}, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        organization = request.user.organization
+        search = request.query_params.get('search', None)
+        client_id = request.query_params.get('client_id', None)
+
+        # Get client and its assigned employees
+        client = get_object_or_404(Client, id=client_id, organization=organization)
+        user_type_order = Case(
+            When(user_type='CEO', then=1),
+            When(user_type='Manager', then=2),
+            When(user_type='LocalityManager', then=3),
+            When(user_type='VisitorCaller', then=4),
+            When(user_type='Caller', then=5),
+            When(user_type='Visitor', then=6),
+            default=7
+        )
+        client_employee = client.assignees_to.all().order_by(user_type_order)
+
+        # Get all employees in the organization
+        employees = Employee.objects.filter(organization=organization).order_by(user_type_order)
+
+        # Apply search filter if provided
+        if search:
+            employees = employees.filter(name__icontains=search)
+
+        # Exclude assigned employees from the remaining employees
+        remaining_employees = employees.exclude(id__in=client_employee.values_list('id', flat=True))
+
+        # Combine the client employees first, followed by the remaining employees
+        combined_employees = list(client_employee) + list(remaining_employees)
+
+        # Serialize and return the data
+        serializer = EmployeeSerializer(
+            combined_employees,
+            many=True,
+            context={
+                'client': client,
+                'current_user_type': request.user.user_type  # Keep this for context if needed
+            }
+        )
+        return Response(serializer.data)
