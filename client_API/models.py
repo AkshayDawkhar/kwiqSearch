@@ -48,6 +48,7 @@ class FollowUp(models.Model):
     actions = models.CharField(max_length=100)
     date_sent = models.DateTimeField()
     done = models.BooleanField(default=False)
+    added_by = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='follow_ups', null=True, blank=True)
 
     def __str__(self):
         return f"{self.client.fname} {self.client.lname} - {self.date_sent}"

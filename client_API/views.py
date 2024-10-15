@@ -120,6 +120,7 @@ class SearchFilterAPIView(APIView):
 
 # View for FollowUp model
 class FollowUpsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         client_id = request.query_params.get('client_id', None)
         target_date = request.query_params.get('target_date', None)
@@ -139,6 +140,8 @@ class FollowUpsAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        data = request.data
+        data['added_by'] = request.user.id
         serializer = FollowUpSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
