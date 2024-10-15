@@ -13,6 +13,13 @@ class Client(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     # assigned_to = models.ForeignKey('organization.Employee', on_delete=models.SET_NULL, related_name='assigned_clients', null=True, blank=True)
     assignees_to = models.ManyToManyField('organization.Employee', related_name='assigned_clients', null=True, blank=True)
+    status = models.CharField(max_length=100,
+                              choices=(
+                                  ('active', 'Active'),
+                                  ('inactive', 'In Active'),
+                                  ('sold', 'Sold'),
+                              ),
+                              default='active',)
 
     def __str__(self):
         return f"{self.fname} {self.lname}"

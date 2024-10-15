@@ -1,7 +1,7 @@
 from os import remove
 from re import search
 
-from django.db.models import Q, Case, When
+from django.db.models import Q, Case, When, Count, Value, IntegerField
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -261,12 +261,20 @@ class ClientListView(generics.ListAPIView):
         # return Client.objects.filter(organization=organization)
         search_query = self.request.query_params.get('search_query', None)
         query = Client.objects.filter(organization=self.request.user.organization)
+        # order by is assignees_to
+
         # print headers
         if search_query:
             # return Client.objects.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
-            query = query.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query)).order_by('-created_on')
-        else:
-            query = query.order_by('-created_on')
+            query = query.filter(Q(fname__icontains=search_query) | Q(lname__icontains=search_query))
+
+        query = query.annotate(
+            assignees_to_self = Case(
+                When(assignees_to=self.request.user, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        ).order_by('-assignees_to_self', '-created_on')
         return query
 
 class ClientEmployeeView(APIView):

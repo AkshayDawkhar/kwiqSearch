@@ -10,6 +10,8 @@ class ClientEmployeeSerializer(serializers.ModelSerializer):
 
 class ClientSerializer(serializers.ModelSerializer):
     assignees_to = ClientEmployeeSerializer(many=True)
+    assignees_to_self = serializers.SerializerMethodField()
+
     class Meta:
         model = Client
         fields = [
@@ -23,7 +25,14 @@ class ClientSerializer(serializers.ModelSerializer):
             'organization',
             'created_on',
             'assignees_to',
-            ]
+            'assignees_to_self',
+            'status'
+        ]
+
+    def get_assignees_to_self(self, obj):
+        # Return the value of 'assignees_to_self' from the annotated queryset
+        return getattr(obj, 'assignees_to_self', 0)
+
     # def get_assigned_to(self, obj):
     #     # return obj.assigned_to.username if obj.assigned_to else None
     #     if obj.assigned_to:
