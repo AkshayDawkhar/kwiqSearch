@@ -78,9 +78,21 @@ class InterestedSearchFilterSerializer(serializers.ModelSerializer):
 
 
 class FollowUpSerializer(serializers.ModelSerializer):
+    added_by = serializers.SerializerMethodField()
     class Meta:
         model = FollowUp
-        fields = '__all__'
+        fields = [
+            'id',
+            'client',
+            'message',
+            'actions',
+            'date_sent',
+            'done',
+            'added_by',
+        ]
+
+    def get_added_by(self, obj):
+        return obj.added_by.name if obj.added_by else ''
 
 
 class FollowUpDateSerializer(serializers.ModelSerializer):
