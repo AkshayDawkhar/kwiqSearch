@@ -75,7 +75,13 @@ def create_projects(source_cursor, org, e):
                                    marketValue=project[25], lifts=project[26], brokerage=project[27],
                                    incentive=project[28],
                                    url=project[29], added_by=e, organization=org)
-        source_cursor.execute('SELECT * FROM home_API_unit WHERE project_id_id = ?', (project[0],))
+        source_cursor.execute('''SELECT 
+                                id,
+                                unit,
+                                CarpetArea,
+                                price,
+                                project_id_id
+                               FROM home_API_unit WHERE project_id_id = ?''', (project[0],))
         units = source_cursor.fetchall()
         for unit in units:
             Unit.objects.create(project_id=p, unit=unit[1], CarpetArea=unit[2], price=unit[3], organization=org)
