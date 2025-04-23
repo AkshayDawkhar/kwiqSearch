@@ -28,11 +28,11 @@ class Client(models.Model):
 class SearchFilter(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     Area = models.ManyToManyField(Area, null=True, blank=True)
-    startBudget = models.FloatField()
-    stopBudget = models.FloatField()
-    startCarpetArea = models.FloatField()
-    stopCarpetArea = models.FloatField()
-    possession = models.DateTimeField()
+    startBudget = models.FloatField(null=True, blank=True)
+    stopBudget = models.FloatField(null=True, blank=True)
+    startCarpetArea = models.FloatField(null=True, blank=True)
+    stopCarpetArea = models.FloatField(null=True, blank=True)
+    possession = models.DateTimeField(null=True, blank=True)
     requirements = models.CharField(max_length=200, blank=True, null=True)
     units = models.ManyToManyField(Units, null=True, blank=True)
 

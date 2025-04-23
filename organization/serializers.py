@@ -1,5 +1,8 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
+
 from .models import Organization, Employee
+
 
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,14 +13,17 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['name','email','organization','user_type','locality','assigned_to']
+        fields = ['name', 'email', 'organization', 'user_type', 'locality', 'assigned_to']
+
 
 class CreateEmployeeSerializer(serializers.ModelSerializer):
     assigned_to = serializers.UUIDField(source='assigned_to.id', allow_null=True, required=False)
 
     class Meta:
         model = Employee
-        fields = ['id', 'username', 'email', 'user_type', 'organization', 'locality', 'assigned_to', 'phone_number','password']
+        fields = ['id', 'username', 'email', 'user_type', 'organization', 'locality', 'assigned_to', 'phone_number',
+                  'password','is_active']
+
 
 class EmployeeSerializer(serializers.ModelSerializer):
     organization = serializers.CharField(source='organization.name', read_only=True)
@@ -27,7 +33,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'username', 'email', 'user_type', 'organization', 'locality', 'assigned_to', 'phone_number', 'assigned', 'editable']
+        fields = ['id', 'username', 'email', 'user_type', 'organization', 'locality', 'assigned_to', 'phone_number',
+                  'assigned', 'editable']
 
     # Method to check if the employee is assigned to the client
     def get_assigned(self, obj):
@@ -54,3 +61,29 @@ class EmployeeSerializer(serializers.ModelSerializer):
             return employee_user_index >= current_user_index  # Editable if the employee is below the current user type
         except ValueError:
             return False  # Default to False if user types are not found
+
+
+# serializers.py
+
+class LoginSerializer(serializers.Serializer):
+    organization_id = serializers.UUIDField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate_organization_id(self, value):
+        """Ensure the organization_id exists in the Organization model."""
+        try:
+            organization = Organization.objects.get(id=value)
+        except Organization.DoesNotExist:
+            raise ValidationError("Organization does not exist.")
+        return value
+
+    def validate(self, attrs):
+        """Additional validation can go here."""
+        email = attrs.get('email')
+        organization_id = attrs.get('organization_id')
+        try:
+            employee = Employee.objects.get(email=email, organization_id=organization_id)
+        except Employee.DoesNotExist:
+            raise ValidationError("No user found with this email and organization.")
+        return attrs

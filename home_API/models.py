@@ -8,6 +8,14 @@ class Project(models.Model):
     area = models.CharField(max_length=100)
     projectName = models.CharField(max_length=100)
     projectType = models.CharField(max_length=100)
+    projectCategory = models.CharField(max_length=100, null=True, blank=True, choices=(
+        ('NEW-LAUNCH', 'New Launch'),
+        ('UNDER-CONSTRUCTION', 'Under Construction'),
+        ('READY-TO-MOVE', 'Ready To Move'),
+        ('RESALE', 'Resale'),
+        ('PRE-LAUNCH', 'Pre Launch'),
+        ('RESALE', 'Resale'),
+    ))
     developerName = models.CharField(max_length=100)
     landParcel = models.FloatField()
     landmark = models.CharField(max_length=100)
@@ -39,6 +47,7 @@ class Project(models.Model):
                                  null=True, blank=True)
     organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='projects',
                                      null=True, blank=True)
+
     def __str__(self):
         return f'{self.projectName} {self.area}'
 
@@ -58,6 +67,7 @@ class Unit(models.Model):
     price = models.IntegerField()
     organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='units',
                                      null=True, blank=True)
+
     def __str__(self):
         return f"{self.unit} {self.project_id.projectName}"
 
@@ -78,6 +88,7 @@ class GovernmentalArea(models.Model):
 class Area(models.Model):
     name = models.CharField(max_length=100)
     formatted_version = models.CharField(max_length=100, unique=True, primary_key=True)
+    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='areas')
 
     def save(self, *args, **kwargs):
         # Generate formatted version of the name before saving

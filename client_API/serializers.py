@@ -9,7 +9,7 @@ class ClientEmployeeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name','email']
 
 class ClientSerializer(serializers.ModelSerializer):
-    assignees_to = ClientEmployeeSerializer(many=True)
+    assignees_to = ClientEmployeeSerializer(many=True, read_only=True)
     assignees_to_self = serializers.SerializerMethodField()
 
     class Meta:

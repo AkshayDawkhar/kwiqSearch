@@ -61,6 +61,7 @@ def create_projects(source_cursor, org, e):
                                      url
                                      from home_API_project''')
     projects = source_cursor.fetchall()
+    
     for project in projects:
         print(project)
         p = Project.objects.create(area=project[1], projectName=project[2], projectType=project[3],

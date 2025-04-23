@@ -75,29 +75,29 @@ class ProjectSerializer1(serializers.ModelSerializer):
 
 
 class UnitSerializer1(serializers.ModelSerializer):
-    project_name = serializers.SerializerMethodField()
+    # project_name = serializers.SerializerMethodField()
+    project = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
     possession = serializers.SerializerMethodField()
     longitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
-    latitude = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
-    project_units = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
+    # project_units = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField()
 
     class Meta:
         model = Unit
-        fields = ['project_id', 'project_name', 'area', 'possession', 'unit', 'CarpetArea', 'price', 'longitude',
+        fields = ['project',
+                  'area', 'possession', 'unit', 'CarpetArea', 'price', 'longitude',
                   'latitude',
-                  'amenities', 'project_units', 'image']
-
-    def get_project_units(self, obj):
-        unit = Unit.objects.filter(project_id=obj.project_id)
-        unit = UnitSerializer(unit, many=True)
-        return unit.data
-
-    def get_project_name(self, obj):
-        return obj.project_id.projectName
+                  'amenities']
+    def get_project(self, obj):
+        return {
+            'projectCategory': obj.project_id.projectCategory,
+            'projectType': obj.project_id.projectType,
+            'name': obj.project_id.projectName,
+            'id': obj.project_id.id
+        }
 
     def get_area(self, obj):
         return obj.project_id.area
@@ -146,7 +146,8 @@ class ProjectsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'area', 'projectName', 'developerName', 'image']
+        fields = ['id', 'area', 'projectName', 'developerName', 'image',
+                  'projectType', 'projectCategory' ]
 
     def get_image(self, obj):
         images = Image.objects.filter(project_id=obj.id)

@@ -1,55 +1,32 @@
 from datetime import datetime
 
 from django.db.models import Q
+from django.db.models import Sum, Case, When, IntegerField
 from django.db.utils import IntegrityError
+from rest_framework import generics as genrics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import generics as genrics
+from rest_framework.views import APIView
+
 from client_API.models import SearchFilter
-from client_API.serializers import SearchFilterSerializer, InterestedSearchFilterSerializer, FilterSerializer
+from client_API.serializers import InterestedSearchFilterSerializer, FilterSerializer
 from .helper import Interested, SearchFilterObject
-from .serializers import ProjectSerializer, UnitSerializer, ProjectSerializer1, UnitSerializer1, AreaSerializer, \
+from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
+from .serializers import ProjectSerializer, UnitSerializer, UnitSerializer1, AreaSerializer, \
     UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer, \
     ProjectDetailsSerializer
-from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
 
 
 class ProjectList(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         units = Unit.objects.all()
         serializer = UnitSerializer1(units, many=True)
         return Response(serializer.data)
 
-    def post(self, request):
-        data = request.data
-        data['created_on'] = datetime.now()
-        data['added_by'] = request.user.id
-        data['organization'] = request.user.organization.id
 
-        units = data.pop('units')
-        projectSerializer = ProjectSerializer(data=request.data)
-        if projectSerializer.is_valid():
-
-            a = projectSerializer.save()
-            print(a.id, a.area)
-            for unit in units:
-                unit['project_id'] = a.id
-                unit['organization'] = request.user.organization.id
-                unitSerializer = UnitSerializer(data=unit)
-                if unitSerializer.is_valid():
-                    u = unitSerializer.save()
-                    print(u)
-                else:
-                    print(unitSerializer.errors)
-                    return Response(data=unitSerializer.errors, status=400)
-                    # print(unitSerializer.errors)
-            # projectSerializer.
-            return Response(data={}, status=status.HTTP_201_CREATED)
-        print(projectSerializer.errors)
-        return Response(data=projectSerializer.errors, status=400)
 
 
 class AreaAPIView(APIView):
@@ -116,6 +93,7 @@ class ProjectsView(APIView):
         projectsSerializer = ProjectsSerializer(project, many=True)
         return Response(projectsSerializer.data)
 
+
 class ProjectsListView(genrics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectsSerializer
@@ -124,14 +102,15 @@ class ProjectsListView(genrics.ListAPIView):
         search_query = self.request.query_params.get('search', None)
         if search_query:
             return Project.objects.filter(
-            Q(
-                Q(projectName__icontains=search_query) |
-                Q(area__icontains=search_query) |
-                Q(developerName__icontains=search_query)
-            ) & Q(organization=self.request.user.organization)
+                Q(
+                    Q(projectName__icontains=search_query) |
+                    Q(area__icontains=search_query) |
+                    Q(developerName__icontains=search_query)
+                ) & Q(organization=self.request.user.organization)
             ).order_by('-created_on')
         return Project.objects.filter(organization=self.request.user.organization
-        ).order_by('-created_on')
+                                      ).order_by('-created_on')
+
 
 class ProjectView(APIView):
     def get(self, request, pk):
@@ -144,6 +123,34 @@ class ProjectView(APIView):
         data.update({'units': unitSerializer.data})
         return Response(data)
         # return Response(projectSerializer.data.update({'nameme': 'akshay'}))
+
+    def post(self, request):
+        data = request.data
+        data['created_on'] = datetime.now()
+        data['added_by'] = request.user.id
+        data['organization'] = request.user.organization.id
+
+        units = data.pop('units')
+        projectSerializer = ProjectSerializer(data=request.data)
+        if projectSerializer.is_valid():
+
+            a = projectSerializer.save()
+            print(a.id, a.area)
+            for unit in units:
+                unit['project_id'] = a.id
+                unit['organization'] = request.user.organization.id
+                unitSerializer = UnitSerializer(data=unit)
+                if unitSerializer.is_valid():
+                    u = unitSerializer.save()
+                    print(u)
+                else:
+                    print(unitSerializer.errors)
+                    return Response(data=unitSerializer.errors, status=400)
+                    # print(unitSerializer.errors)
+            # projectSerializer.
+            return Response(data={}, status=status.HTTP_201_CREATED)
+        print(projectSerializer.errors)
+        return Response(data=projectSerializer.errors, status=400)
 
     def put(self, request, pk):
         data = request.data
@@ -264,7 +271,6 @@ class FilterAPIView(APIView):
                 # print(unit.get('rera'))
                 unit['rating'] = searchFilterObject.compare_objects(interested)
             sorted_data = sorted(unitSerializer1.data, key=lambda x: x['rating'], reverse=True)
-
         return Response(sorted_data)
 
         # try:
@@ -392,6 +398,7 @@ class ProjectDetails(AreaAPIView):
     def get(self, request, id):
         project = Project.objects.get(id=id)
         projectSerializer = ProjectDetailsSerializer(project)
+        print(projectSerializer.data)
         return Response(projectSerializer.data)
 
 
@@ -407,3 +414,129 @@ class UnitImages(AreaAPIView):
         images = FloorMap.objects.filter(unit=id)
         imagesSerializer = FloorMapSerializer(images, many=True)
         return Response(imagesSerializer.data)
+
+
+# class FilterUnits(genrics.ListAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = UnitSerializer1
+#
+#     def get_queryset(self):
+#         area = self.request.query_params.get('area', None)
+#         startBudget = self.request.query_params.get('startBudget', None)
+#         stopBudget = self.request.query_params.get('stopBudget', None)
+#         startCarpetArea = self.request.query_params.get('startCarpetArea', None)
+#         stopCarpetArea = self.request.query_params.get('stopCarpetArea', None)
+#         possession = self.request.query_params.get('possession', None)
+#         units = self.request.query_params.get('units', None)
+#         data = self.request.query_params
+#         serializer = SearchFilterSerializer(data=data)
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=400)
+#         if area:
+#             queryset = Unit.objects.filter(project_id__area=area)
+#         else:
+#             queryset = Unit.objects.all()
+#         if startBudget:
+#             queryset = queryset.filter(price__gte=startBudget)
+#         if stopBudget:
+#             queryset = queryset.filter(price__lte=stopBudget)
+#         if startCarpetArea:
+#             queryset = queryset.filter(CarpetArea__gte=startCarpetArea)
+#         if stopCarpetArea:
+#             queryset = queryset.filter(CarpetArea__lte=stopCarpetArea)
+#         if possession:
+#             queryset = queryset.filter(project_id__possession=possession)
+#         if units:
+#             queryset = queryset.filter(unit__in=units)
+#         return queryset
+
+
+class FilterUnits(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        print(data)
+        area = data.get('area', None)
+        startBudget = data.get('startBudget', None)
+        stopBudget = data.get('stopBudget', None)
+        startCarpetArea = data.get('startCarpetArea', None)
+        stopCarpetArea = data.get('stopCarpetArea', None)
+        possession = data.get('possession', None)
+        amenities = data.get('amenities', None)
+        units = data.get('units', None)
+        offset = int(request.query_params.get('offset', 0))
+        limit = 15
+
+        filters = Q(project_id__organization=request.user.organization)
+        scoring_conditions = []
+
+        # Updated weight rankings based on real-world importance
+        weights = {
+            'area': 3,  # Important but flexible
+            'startBudget': 7,  # Budget is a top priority
+            'stopBudget': 8,  # Budget limit is crucial
+            'startCarpetArea': 6,  # Space is highly important
+            'stopCarpetArea': 5,  # Space constraints matter
+            'possession': 4,  # Somewhat important but negotiable
+            'units': 2,  # Less significant compared to budget & space
+            'amenities': 1  # Least important
+        }
+
+        if area:
+            filters &= Q(project_id__area__in=area)
+            scoring_conditions.append(When(project_id__area=area, then=weights['area']))
+        if startBudget:
+            filters &= Q(price__gte=float(startBudget))
+            scoring_conditions.append(When(price__gte=float(startBudget), then=weights['startBudget']))
+        if stopBudget:
+            filters &= Q(price__lte=float(stopBudget))
+            scoring_conditions.append(When(price__lte=float(stopBudget), then=weights['stopBudget']))
+        if startCarpetArea:
+            filters &= Q(CarpetArea__gte=float(startCarpetArea))
+            scoring_conditions.append(When(CarpetArea__gte=float(startCarpetArea), then=weights['startCarpetArea']))
+        if stopCarpetArea:
+            filters &= Q(CarpetArea__lte=float(stopCarpetArea))
+            scoring_conditions.append(When(CarpetArea__lte=float(stopCarpetArea), then=weights['stopCarpetArea']))
+        if possession:
+            filters &= Q(project_id__possession__lte=possession)
+            scoring_conditions.append(When(project_id__possession__lte=possession, then=weights['possession']))
+        if units:
+            filters &= Q(unit__in=units)
+            scoring_conditions.append(When(unit__in=units, then=weights['units']))
+        if amenities:
+            if amenities == 1:
+                # filters &= Q(amenities__in=['basic amenities', 'all amenities'])
+                filters &= Q(project_id__amenities__in=['basic amenities', 'all amenities'])
+                scoring_conditions.append(When(project_id__amenities__in=['basic amenities', 'all amenities'], then=weights['amenities']))
+            if amenities == 2:
+                filters &= Q(project_id__amenities__in=['basic amenities'])
+                scoring_conditions.append(When(project_id__amenities__in=['basic amenities'], then=weights['amenities']))
+        queryset = Unit.objects.filter(filters)
+        print(queryset)
+        print(queryset.count())
+        if scoring_conditions:
+            queryset = queryset.annotate(
+                match_score=Sum(Case(*scoring_conditions, output_field=IntegerField()))
+            ).order_by('-match_score','-project_id__created_on')
+        else :
+            queryset = queryset.order_by('-project_id__created_on')
+
+        paginated_units = queryset[offset:offset + limit]
+        unit_serializer = UnitSerializer1(paginated_units, many=True)
+
+        # Generate next URL for pagination
+        next_url = None
+        if queryset.count() > offset + limit:
+            next_url = request.build_absolute_uri(f"?offset={offset + limit}")
+
+        return Response({
+            "results": unit_serializer.data,
+            "next": next_url
+        })
+
+class GovernmentalAreaAPIView(APIView):
+    def get(self, request):
+        areas = GovernmentalArea.objects.all()
+        serializer = GovernmentalAreaSerializer(areas, many=True)
+        return Response(serializer.data)

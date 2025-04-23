@@ -35,7 +35,8 @@ class Employee(AbstractUser):
     last_name = None
     name = models.CharField(max_length=50, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    assigned_to = models.ForeignKey('self', on_delete=models.DO_NOTHING, related_name='assigned_employees', null=True, blank=True)
+    assigned_to = models.ForeignKey('self', on_delete=models.SET_NULL, related_name='assigned_employees', null=True, blank=True)
+    is_active = models.BooleanField(default=True)
     locality = models.CharField(max_length=100,
                                 choices=[
                                     ('east','East'),
