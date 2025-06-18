@@ -122,6 +122,26 @@ class UnitSerializer1(serializers.ModelSerializer):
             return first_image_serializer.data.get('image')
         return None
 
+class MapProjectUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id','projectName', 'projectType', 'developerName', 'longitude', 'latitude']
+
+class MapUnitProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ['id','unit', 'CarpetArea', 'price']
+class MapProjectSerializer(serializers.ModelSerializer):
+    units = MapUnitProjectSerializer(many=True)
+    class Meta:
+        model = Project
+        fields = ['id','projectName', 'projectType', 'developerName', 'longitude', 'latitude',
+                  'units'
+                  ]
+
+    # def get_units(self, obj):
+    #     return obj.units.values_list('unit', flat=True)
+
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:

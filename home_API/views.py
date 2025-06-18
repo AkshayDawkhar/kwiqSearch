@@ -15,7 +15,7 @@ from .helper import Interested, SearchFilterObject
 from .models import Project, Unit, Area, Units, GovernmentalArea, Image, FloorMap
 from .serializers import ProjectSerializer, UnitSerializer, UnitSerializer1, AreaSerializer, \
     UnitsSerializer, GovernmentalAreaSerializer, ProjectsSerializer, ImageSerializer, FloorMapSerializer, \
-    ProjectDetailsSerializer
+    ProjectDetailsSerializer, MapProjectUnitSerializer, MapProjectSerializer
 
 
 class ProjectList(APIView):
@@ -513,8 +513,6 @@ class FilterUnits(APIView):
                 filters &= Q(project_id__amenities__in=['basic amenities'])
                 scoring_conditions.append(When(project_id__amenities__in=['basic amenities'], then=weights['amenities']))
         queryset = Unit.objects.filter(filters)
-        print(queryset)
-        print(queryset.count())
         if scoring_conditions:
             queryset = queryset.annotate(
                 match_score=Sum(Case(*scoring_conditions, output_field=IntegerField()))
@@ -532,11 +530,105 @@ class FilterUnits(APIView):
 
         return Response({
             "results": unit_serializer.data,
-            "next": next_url
+            "next": next_url,
+            "count": queryset.count()
+        })
+
+class FilterMapUnits(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        area = data.get('area', None)
+        startBudget = data.get('startBudget', None)
+        stopBudget = data.get('stopBudget', None)
+        startCarpetArea = data.get('startCarpetArea', None)
+        stopCarpetArea = data.get('stopCarpetArea', None)
+        possession = data.get('possession', None)
+        amenities = data.get('amenities', None)
+        units = data.get('units', None)
+
+        scoring_conditions = []
+        filters = Q()
+        weights = {
+            'area': 3,  # Important but flexible
+            'startBudget': 7,  # Budget is a top priority
+            'stopBudget': 8,  # Budget limit is crucial
+            'startCarpetArea': 6,  # Space is highly important
+            'stopCarpetArea': 5,  # Space constraints matter
+            'possession': 4,  # Somewhat important but negotiable
+            'units': 2,  # Less significant compared to budget & space
+            'amenities': 1  # Least important
+        }
+
+        if area:
+            filters &= Q(area__in=area)
+            scoring_conditions.append(When(area=area, then=weights['area']))
+        if startBudget:
+            filters &= Q(units__price__gte=float(startBudget))
+            scoring_conditions.append(When(units__price__gte=float(startBudget), then=weights['startBudget']))
+        if stopBudget:
+            filters &= Q(units__price__lte=float(stopBudget))
+            scoring_conditions.append(When(units__price__lte=float(stopBudget), then=weights['stopBudget']))
+        if startCarpetArea:
+            filters &= Q(units__CarpetArea__gte=float(startCarpetArea))
+            scoring_conditions.append(When(units__CarpetArea__gte=float(startCarpetArea), then=weights['startCarpetArea']))
+        if stopCarpetArea:
+            filters &= Q(units__CarpetArea__lte=float(stopCarpetArea))
+            scoring_conditions.append(When(units__CarpetArea__lte=float(stopCarpetArea), then=weights['stopCarpetArea']))
+        if possession:
+            filters &= Q(possession__lte=possession)
+            scoring_conditions.append(When(possession__lte=possession, then=weights['possession']))
+        if units:
+            filters &= Q(units__unit__in=units)
+            scoring_conditions.append(When(units__unit__in=units, then=weights['units']))
+        if amenities:
+            if amenities == 1:
+                filters &= Q(amenities__in=['basic amenities', 'all amenities'])
+                scoring_conditions.append(When(amenities__in=['basic amenities', 'all amenities'], then=weights['amenities']))
+            if amenities == 2:
+                filters &= Q(amenities__in=['basic amenities'])
+                scoring_conditions.append(When(amenities__in=['basic amenities'], then=weights['amenities']))
+        if filters != Q():
+            filters &= Q(organization=request.user.organization)
+            queryset = Project.objects.filter(filters)
+            if scoring_conditions:
+                queryset = queryset.annotate(
+                    match_score=Sum(Case(*scoring_conditions, output_field=IntegerField()))
+                ).order_by('-match_score','-created_on')
+            else :
+                queryset = queryset.order_by('-created_on')
+            unit_serializer = MapProjectUnitSerializer(queryset, many=True)
+            return Response({
+                "results": unit_serializer.data,
+            })
+        else:
+            print("no data")
+            return Response({
+                "results": [],
+            })
+
+    def get(self, request):
+        data = request.data
+        print(data)
+        queryset = Project.objects.filter(organization=request.user.organization)
+        serlializer_data = MapProjectUnitSerializer(queryset, many=True)
+        return Response({
+            "results": serlializer_data.data,
         })
 
 class GovernmentalAreaAPIView(APIView):
     def get(self, request):
         areas = GovernmentalArea.objects.all()
         serializer = GovernmentalAreaSerializer(areas, many=True)
+        return Response(serializer.data)
+
+class ViewMapProject(APIView):
+    def get(self, request, pk):
+        try:
+            project = Project.objects.get(pk=pk)
+        except Project.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = MapProjectSerializer(project)
         return Response(serializer.data)

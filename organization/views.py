@@ -45,8 +45,10 @@ class EmployeeActiveInActive(APIView):
             if active_status not in [True, False]:
                 return Response({'message': 'Invalid active status'}, status=status.HTTP_400_BAD_REQUEST)
             employee.is_active = not employee.is_active
-            if employee.auth_token:
+            try:
                 employee.auth_token.delete()
+            except:
+                print("Token not found")
             employee.save()
             return Response({'message': 'Employee status updated successfully'}, status=status.HTTP_200_OK)
         except Employee.DoesNotExist:
@@ -79,6 +81,7 @@ class Login(APIView):
         serializer = LoginSerializer(data=request.data)
 
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response({
                 "message": "Invalid data",
                 "errors": serializer.errors
@@ -89,7 +92,7 @@ class Login(APIView):
         password = serializer.validated_data['password']
 
         try:
-            employee = Employee.objects.get(email=email, organization_id=organization_id)
+            employee = Employee.objects.get(email=email, organization_id=organization_id, is_active=True)
         except Employee.DoesNotExist:
             return Response({
                 "message": "No user found with this email and organization."
