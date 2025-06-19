@@ -88,7 +88,7 @@ class GovernmentalArea(models.Model):
 class Area(models.Model):
     name = models.CharField(max_length=100)
     formatted_version = models.CharField(max_length=100, unique=True, primary_key=True)
-    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='areas')
+    organization = models.ForeignKey('organization.Organization', on_delete=models.CASCADE, related_name='areas',null=True)
 
     def save(self, *args, **kwargs):
         # Generate formatted version of the name before saving
