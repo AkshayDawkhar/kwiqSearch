@@ -125,7 +125,7 @@ class UnitSerializer1(serializers.ModelSerializer):
 class MapProjectUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id','projectName', 'projectType', 'developerName', 'longitude', 'latitude']
+        fields = ['id','projectName', 'projectType', 'projectCategory', 'developerName', 'longitude', 'latitude']
 
 class MapUnitProjectSerializer(serializers.ModelSerializer):
     class Meta:
