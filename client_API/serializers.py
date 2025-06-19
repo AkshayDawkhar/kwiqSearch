@@ -34,11 +34,11 @@ class ClientSerializer(serializers.ModelSerializer):
         return getattr(obj, 'assignees_to_self', 0)
 
     # def get_assigned_to(self, obj):
-    #     # return obj.assigned_to.username if obj.assigned_to else None
-    #     if obj.assigned_to:
+    #     # return obj.assigned_to_sel.username if obj.assigned_to_sel else None
+    #     if obj.assigned_to_sel:
     #         return {
-    #             'id': obj.assigned_to.id,
-    #             'username': obj.assigned_to.username
+    #             'id': obj.assigned_to_sel.id,
+    #             'username': obj.assigned_to_sel.username
     #         }
 
 class SearchFilterSerializer(serializers.ModelSerializer):
